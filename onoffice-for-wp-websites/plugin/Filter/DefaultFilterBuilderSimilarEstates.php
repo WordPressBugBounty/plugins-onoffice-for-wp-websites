@@ -38,19 +38,6 @@ class DefaultFilterBuilderSimilarEstates
 
 	/** @var int[] */
 	private $_excludeIds = [];
-	/** @var array */
-
-	private $_defaultFilter = [
-		'veroeffentlichen' => [
-			['op' => '=', 'val' => 1],
-		],
-		'verkauft' => [
-			['op' => '!=', 'val' => 1],
-		],
-		'reserviert' => [
-			['op' => '!=', 'val' => 1],
-		]
-	];
 
 
 	/**
@@ -73,7 +60,17 @@ class DefaultFilterBuilderSimilarEstates
 
 	public function buildFilter(): array
 	{
-		$filter = $this->_defaultFilter;
+		$filter = [
+			'veroeffentlichen' => [
+				['op' => '=', 'val' => 1],
+			],
+			'verkauft' => [
+				['op' => '!=', 'val' => 1],
+			],
+			'reserviert' => [
+				['op' => '!=', 'val' => 1],
+			]
+		];
 
 		$pFilterConfiguration = $this->_pFilterConfigurationSimilarEstates;
 		$pDataListView = $pFilterConfiguration->getDataViewSimilarEstates();
@@ -98,13 +95,6 @@ class DefaultFilterBuilderSimilarEstates
 		return $filter;
 	}
 
-		/**
-	 * @return array
-	 */
-	public function getDefaultFilter(): array
-	{
-		return $this->_defaultFilter;
-	}
 
 	/** @return array */
 	public function getExcludeIds(): array

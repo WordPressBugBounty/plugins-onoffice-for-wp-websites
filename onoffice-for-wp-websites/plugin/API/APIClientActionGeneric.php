@@ -95,12 +95,11 @@ class APIClientActionGeneric
 	}
 
 	/**
-	 * @param bool $saveToCache
 	 * call addRequestToQueue() first
 	 */
-	public function sendRequests(bool $saveToCache = true)
+	public function sendRequests()
 	{
-		$this->_pSDKWrapper->sendRequests($saveToCache);
+		$this->_pSDKWrapper->sendRequests();
 	}
 
 	/**
@@ -209,7 +208,7 @@ class APIClientActionGeneric
 		{ $this->_result = $result; }
 
 	/** @return array */
-	public function getResult(): array
+	protected function getResult(): array
 		{ return $this->_result; }
 
     /** @return string */

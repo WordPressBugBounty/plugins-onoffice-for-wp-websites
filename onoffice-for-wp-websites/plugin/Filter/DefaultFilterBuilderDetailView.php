@@ -38,13 +38,6 @@ class DefaultFilterBuilderDetailView
 	/** @var int */
 	private $_estateId = 0;
 
-	/** @var array */
-	private $_defaultFilter = [
-		'veroeffentlichen' => [
-			['op' => '=', 'val' => 1],
-		],
-	];
-
 
 	/**
 	 *
@@ -57,11 +50,15 @@ class DefaultFilterBuilderDetailView
 		if ($this->_estateId === 0) {
 			throw new Exception('EstateId must not be 0');
 		}
-		$filter = $this->_defaultFilter;
-		$filter['Id'] = [
-			['op' => '=', 'val' => $this->_estateId],
+
+		return [
+			'veroeffentlichen' => [
+				['op' => '=', 'val' => 1],
+			],
+			'Id' => [
+				['op' => '=', 'val' => $this->_estateId],
+			],
 		];
-		return $filter;
 	}
 
 	/** @param int $estateId */
@@ -71,12 +68,4 @@ class DefaultFilterBuilderDetailView
 	/** @return int $estateId */
 	public function getEstateId(): int
 		{ return $this->_estateId; }
-
-	/**
-	 * @return array
-	 */
-	public function getDefaultFilter(): array
-	{
-		return $this->buildFilter();
-	}
 }
