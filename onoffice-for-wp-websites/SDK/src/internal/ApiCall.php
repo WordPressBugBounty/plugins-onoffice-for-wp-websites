@@ -209,17 +209,29 @@ class ApiCall
 				preg_replace("/[^0-9]/", "", substr($num, $sep+1, strlen($num)))
 		);
 	}
-	private function sortRecords(array $cachedResponse, array $filter, string $sortby, string $sortorder)
+	private function sortRecords(array $cachedResponse, array $filter, $sortby, string $sortorder)
 	{
 		$newRecords = $cachedResponse["data"]["records"];
+		$newRecordsRaw = $cachedResponse["raw"]["data"]["records"];
+		foreach ($newRecords as $index => &$record) {
+			$record['elementsRaw'] = isset($newRecordsRaw[$index]['elements']) ? $newRecordsRaw[$index]['elements'] : null;
+		}
 		$fieldTypes = $cachedResponse["types"];
 		$sortBy = (array_key_exists('geo', $filter) && array_key_exists('loc', $filter['geo'][0])) ? 'geo_distance' : $sortby;
 		$sortOrder = (array_key_exists('geo', $filter) && array_key_exists('loc', $filter['geo'][0])) ? 'ASC' : $sortorder;
 		if(isset($sortby))
 		{
-			usort($newRecords, function ($a, $b) use ($sortBy, $sortOrder, $fieldTypes) {
-				$sortA = in_array($sortBy, array_keys($a['elements'])) ? $a['elements'][$sortBy] : '';
-				$sortB = in_array($sortBy, array_keys($b['elements'])) ? $b['elements'][$sortBy] : '';
+			$compareRecords = function ($a, $b, $sortBy, $sortOrder, $fieldTypes) {
+				if(in_array($fieldTypes[$sortBy], ['boolean', 'date', 'datetime', 'float', 'integer'])){
+					$sortA = isset($a['elementsRaw'][$sortBy]) ? $a['elementsRaw'][$sortBy]
+						: (isset($a['elements'][$sortBy]) ? $a['elements'][$sortBy] : '');
+					$sortB = isset($b['elementsRaw'][$sortBy]) ? $b['elementsRaw'][$sortBy]
+						: (isset($b['elements'][$sortBy]) ? $b['elements'][$sortBy] : '');
+				}
+				else{
+					$sortA = isset($a['elements'][$sortBy]) ? $a['elements'][$sortBy] : '';
+					$sortB = isset($b['elements'][$sortBy]) ? $b['elements'][$sortBy] : '';
+				}
 				if((array_key_exists($sortBy,$fieldTypes) && $fieldTypes[$sortBy] === "integer")
 					|| (array_key_exists($sortBy,$fieldTypes) && $fieldTypes[$sortBy] === "float"))
 				{
@@ -231,13 +243,37 @@ class ApiCall
 					$sortA = strtotime($sortA);
 					$sortB = strtotime($sortB);
 				}
+				if(array_key_exists($sortBy,$fieldTypes) && $fieldTypes[$sortBy] === "boolean")
+				{
+					$sortA = $sortA === "" ? "0" : $sortA;
+					$sortB = $sortB === "" ? "0" : $sortB;
+				}
+				if($sortA == $sortB){
+					return 0;
+				}
 				if ($sortOrder === 'ASC') {
 					return ($sortA > $sortB) ? 1 : -1;
 				}
 				else {
 					return ($sortA > $sortB) ? -1 : 1;
 				}
-			});
+			};
+			if (is_string($sortBy)) {
+				usort($newRecords, function ($a, $b) use ($compareRecords, $sortBy, $sortOrder, $fieldTypes) {
+					return $compareRecords($a, $b, $sortBy, $sortOrder, $fieldTypes);
+				});
+			}
+			elseif (is_array($sortBy)) {
+				usort($newRecords, function ($a, $b) use ($compareRecords, $sortBy, $fieldTypes) {
+					foreach ($sortBy as $field => $order) {
+						$result = $compareRecords($a, $b, $field, $order, $fieldTypes);
+						if ($result !== 0) {
+							return $result;
+						}
+					}
+					return 0; // All fields equal
+				});
+			}
 		}
 		return $newRecords;
 	}
@@ -268,164 +304,192 @@ class ApiCall
 			foreach($filter as $fieldName => $value) {
 				if($fieldName == "veroeffentlichen" || $fieldName == "referenz" || $fieldName == "homepage_veroeffentlichen")
 					continue;
-				$op = $value[0]["op"];
-				$val = $value[0]["val"];
-				if($val === null || (is_string($val) && trim($val) === ''))
-					continue;
-
-				if(strtolower($op) === '=')
-				{
-					if(!array_key_exists($fieldName,$item["elements"]))
-					{
-						unset($filteredArray[$index]);
-						break;
-					}
-					if(is_array($val))
-					{
-						if(!in_array($item["elements"][$fieldName],$val)){
-							unset($filteredArray[$index]);
-							break;
-						}
-
-					} else {
-						//int compare
-						if($fieldTypes[$fieldName] === "integer"
-							&& intval($itemRaw["elements"][$fieldName]) != intval($val))
-						{
-							unset($filteredArray[$index]);
-							break;
-						}
-						//float compare
-						if($fieldTypes[$fieldName] === "float"
-							&& floatval($itemRaw["elements"][$fieldName]) != floatval($val))
-						{
-							unset($filteredArray[$index]);
-							break;
-						}
-						//boolean compare
-						if($fieldTypes[$fieldName] === "boolean"
-							&& (intval($itemRaw["elements"][$fieldName]) != intval($val)))
-						{
-							unset($filteredArray[$index]);
-							break;
-						}
-
-						//string compare
-						if(($fieldTypes[$fieldName] === "varchar" || $fieldTypes[$fieldName] === "varchar")
-							&& mb_strtolower($item["elements"][$fieldName]) != mb_strtolower($val)){
-							unset($filteredArray[$index]);
-							break;
-						}
-					}
-				}
-				elseif(strtolower($op) === '!=')
-				{
-					if(is_array($val))
-					{
-						if(!in_array($item["elements"][$fieldName],$val)){
-							unset($filteredArray[$index]);
-							break;
-						}
-
-					} else {
-						//int compare
-						if($fieldTypes[$fieldName] === "integer"
-							&& intval($itemRaw["elements"][$fieldName]) == intval($val))
-						{
-							unset($filteredArray[$index]);
-							break;
-						}
-						//float compare
-						if($fieldTypes[$fieldName] === "float"
-							&& floatval($itemRaw["elements"][$fieldName]) == floatval($val))
-						{
-							unset($filteredArray[$index]);
-							break;
-						}
-						//boolean compare
-						if($fieldTypes[$fieldName] === "boolean"
-							&& boolval($itemRaw["elements"][$fieldName]) == boolval($val))
-						{
-							unset($filteredArray[$index]);
-							break;
-						}
-
-						//string compare
-						if(mb_strtolower($item["elements"][$fieldName]) == mb_strtolower($val)){
-							unset($filteredArray[$index]);
-							break;
-						}
-					}
-				}
-				elseif (strtolower($op) === 'like')
-				{
-					$val = str_replace('%','',$val);
-					if(!array_key_exists($fieldName,$itemRaw["elements"]) || !str_contains($itemRaw["elements"][$fieldName], $val)){
-						unset($filteredArray[$index]);
-						break;
-					}
-				}
-				elseif (strtolower($op) === 'in')
-				{
-					$elVal = $itemRaw["elements"][$fieldName];
-					if($fieldName === "Id") {
-						$elVal = str_replace(',','',$elVal);
-						$elVal = str_replace('.','',$elVal);
-					}
-
-					$lowerVal = array_map('mb_strtolower', $val);
-					if(!in_array(mb_strtolower($elVal ?? ''), $lowerVal)){
-						unset($filteredArray[$index]);
-						break;
-					}
-				}
-				elseif ($op === '<=')
-				{
-					if(!array_key_exists($fieldName,$itemRaw["elements"])
-						|| $this->isBigger($fieldName, $val, $itemRaw["elements"][$fieldName], $fieldTypes[$fieldName])) {
-						unset($filteredArray[$index]);
-						break;
-					}
-				}
-				elseif ($op === '>=')
-				{
-					if(!array_key_exists($fieldName,$itemRaw["elements"])
-						|| $this->isSmaller($fieldName, $val, $itemRaw["elements"][$fieldName], $fieldTypes[$fieldName])) {
-						unset($filteredArray[$index]);
-						break;
-					}
-				}
-				elseif (strtolower($op) === 'geo')
-				{
-					$km = intval($val);
-					$min = $value[0]["min"];
-					$max = $value[0]["max"];
-
-					$loc = $value[0]["loc"] ?? '';
-					if($loc != '' && $min != null && intval($min) > 0)
-						$isGeoAndMin = $min;
-					if($loc != '' && $max != null && intval($max) > 0)
-						$isGeoAndMax = $max;
-
-					$selectedCoordinates = explode(",", $loc);
-					if(!array_key_exists('laengengrad',$item["elements"]) || !array_key_exists('breitengrad',$item["elements"])
-						|| !is_array($selectedCoordinates) || count($selectedCoordinates) != 2)
+				foreach ($value as $fieldValue) {
+					$op = $fieldValue["op"];
+					$val = $fieldValue["val"];
+					if($val === null || (is_string($val) && trim($val) === ''))
 						continue;
-					if($item["elements"]['laengengrad'] == null || $item["elements"]['breitengrad'] == null){
-						unset($filteredArray[$index]);
-						break;
+
+					if(strtolower($op) === '=')
+					{
+						if(!array_key_exists($fieldName,$item["elements"]))
+						{
+							unset($filteredArray[$index]);
+							break;
+						}
+						if(is_array($val))
+						{
+							if(!in_array($item["elements"][$fieldName],$val)){
+								unset($filteredArray[$index]);
+								break;
+							}
+
+						} else {
+							//int compare
+							if($fieldTypes[$fieldName] === "integer"
+								&& intval($itemRaw["elements"][$fieldName]) != intval($val))
+							{
+								unset($filteredArray[$index]);
+								break;
+							}
+							//float compare
+							if($fieldTypes[$fieldName] === "float"
+								&& floatval($itemRaw["elements"][$fieldName]) != floatval($val))
+							{
+								unset($filteredArray[$index]);
+								break;
+							}
+							//boolean compare
+							if($fieldTypes[$fieldName] === "boolean"
+								&& (intval($itemRaw["elements"][$fieldName]) != intval($val)))
+							{
+								unset($filteredArray[$index]);
+								break;
+							}
+
+							//string compare
+							if(($fieldTypes[$fieldName] === "varchar" || $fieldTypes[$fieldName] === "varchar")
+								&& mb_strtolower($item["elements"][$fieldName]) != mb_strtolower($val)){
+								unset($filteredArray[$index]);
+								break;
+							}
+						}
 					}
+					elseif(strtolower($op) === '!=')
+					{
+						if(is_array($val))
+						{
+							if(!in_array($item["elements"][$fieldName],$val)){
+								unset($filteredArray[$index]);
+								break;
+							}
 
-					$coordinate1 = new Coordinate($item["elements"]['laengengrad'], $item["elements"]['breitengrad']);
-					$coordinate2 = new Coordinate($selectedCoordinates[0], $selectedCoordinates[1]);
-					$distance = $calculator->getDistance($coordinate1, $coordinate2);
+						} else {
+							//int compare
+							if($fieldTypes[$fieldName] === "integer"
+								&& intval($itemRaw["elements"][$fieldName]) == intval($val))
+							{
+								unset($filteredArray[$index]);
+								break;
+							}
+							//float compare
+							if($fieldTypes[$fieldName] === "float"
+								&& floatval($itemRaw["elements"][$fieldName]) == floatval($val))
+							{
+								unset($filteredArray[$index]);
+								break;
+							}
+							//boolean compare
+							if($fieldTypes[$fieldName] === "boolean"
+								&& boolval($itemRaw["elements"][$fieldName]) == boolval($val))
+							{
+								unset($filteredArray[$index]);
+								break;
+							}
 
-					if(intval($distance/1000) > $km){
-						unset($filteredArray[$index]);
-						break;
-					} else {
-						$filteredArray[$index]["elements"]['geo_distance'] = intval($distance);
-						$filteredArrayRaw[$k]["elements"]['geo_distance'] = intval($distance);
+							//string compare
+							if(mb_strtolower($item["elements"][$fieldName]) == mb_strtolower($val)){
+								unset($filteredArray[$index]);
+								break;
+							}
+						}
+					}
+					elseif (strtolower($op) === 'like')
+					{
+						$val = str_replace('%','',$val);
+
+						if($fieldName === 'multiParkingLot') {
+							$parkingLots = $itemRaw['elements'][$fieldName] ?? [];
+
+							$hasValidParkingLot = array_filter($parkingLots, function ($lot) {
+								return !in_array(null, $lot, true)
+									&& !in_array(0, $lot, true)
+									&& !in_array(0.0, $lot, true)
+									&& !in_array('', $lot, true);
+							});
+
+							if (!$hasValidParkingLot) {
+								unset($filteredArray[$index]);
+								break;
+							}
+						} elseif(!array_key_exists($fieldName,$itemRaw["elements"]) || !str_contains($itemRaw["elements"][$fieldName], $val)){
+							unset($filteredArray[$index]);
+							break;
+						}
+					}
+					elseif (strtolower($op) === 'in')
+					{
+						//Objekttyp verhält sich nicht wie erwartet
+						$elVal = $itemRaw["elements"][$fieldName];
+						if($fieldName === "Id") {
+							$elVal = str_replace(',','',$elVal);
+							$elVal = str_replace('.','',$elVal);
+						}
+
+						if(!is_array($val)) {
+							$val = array($val);
+						}
+						$lowerVal = array_map('mb_strtolower', $val);
+
+						//Needed for nested array (like fahrstuhl)
+						if(is_array($elVal)) {
+							if (empty($elVal) || count(array_intersect(array_map('strtolower', $elVal), $lowerVal)) === 0) {
+								unset($filteredArray[$index]);
+								break;
+							}
+						}elseif(!in_array(mb_strtolower($elVal ?? ''), $lowerVal)){
+							unset($filteredArray[$index]);
+							break;
+						}
+					}
+					elseif ($op === '<=')
+					{
+						if(!array_key_exists($fieldName,$itemRaw["elements"])
+							|| $this->isBigger($val, $itemRaw["elements"][$fieldName], $fieldTypes[$fieldName])) {
+							unset($filteredArray[$index]);
+							break;
+						}
+					}
+					elseif ($op === '>=')
+					{
+						if(!array_key_exists($fieldName,$itemRaw["elements"])
+							|| $this->isSmaller($val, $itemRaw["elements"][$fieldName], $fieldTypes[$fieldName])) {
+							unset($filteredArray[$index]);
+							break;
+						}
+					}
+					elseif (strtolower($op) === 'geo')
+					{
+						$km = intval($val);
+						$min = $value[0]["min"];
+						$max = $value[0]["max"];
+
+						$loc = $value[0]["loc"] ?? '';
+						if($loc != '' && $min != null && intval($min) > 0)
+							$isGeoAndMin = $min;
+						if($loc != '' && $max != null && intval($max) > 0)
+							$isGeoAndMax = $max;
+
+						$selectedCoordinates = explode(",", $loc);
+						if(!array_key_exists('laengengrad',$item["elements"]) || !array_key_exists('breitengrad',$item["elements"])
+							|| !is_array($selectedCoordinates) || count($selectedCoordinates) != 2)
+							continue;
+						if($item["elements"]['laengengrad'] == null || $item["elements"]['breitengrad'] == null){
+							unset($filteredArray[$index]);
+							break;
+						}
+
+						$coordinate1 = new Coordinate($item["elements"]['laengengrad'], $item["elements"]['breitengrad']);
+						$coordinate2 = new Coordinate($selectedCoordinates[0], $selectedCoordinates[1]);
+						$distance = $calculator->getDistance($coordinate1, $coordinate2);
+
+						if(intval($distance/1000) > $km){
+							unset($filteredArray[$index]);
+							break;
+						} else {
+							$filteredArray[$index]["elements"]['geo_distance'] = intval($distance);
+							$filteredArrayRaw[$k]["elements"]['geo_distance'] = intval($distance);
+						}
 					}
 				}
 			}
@@ -453,16 +517,18 @@ class ApiCall
 		$cachedResponse["raw"]["data"]["records"] = $filteredArrayRaw;
 	}
 	/**
-	 * @param array $responses
+	 * @param mixed $filterVal
+	 * @param mixed $rawValue
 	 */
-	private function isBigger(string $key, mixed $filterVal, mixed $rawValue, string $type)
+	private function isBigger($filterVal, $rawValue, string $type): bool
 	{
-		return $this->isSmaller($key, $filterVal, $rawValue, $type, false);
+		return $this->isSmaller($filterVal, $rawValue, $type, false);
 	}
 	/**
-	 * @param array $responses
+	 * @param mixed $filterVal
+	 * @param mixed $rawValue
 	 */
-	private function isSmaller(string $key, mixed $filterVal, mixed $rawValue, string $type, bool $isSmaller = true)
+	private function isSmaller($filterVal, $rawValue, string $type, bool $isSmaller = true): bool
 	{
 		if($type === 'float' || $type === 'integer') {
 			if($isSmaller){

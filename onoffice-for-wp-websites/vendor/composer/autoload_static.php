@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234
+class ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576
 {
     public static $files = array (
         '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
@@ -26,6 +26,10 @@ class ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234
         array (
             'Opis\\Closure\\' => 13,
         ),
+        'L' => 
+        array (
+            'Location\\' => 9,
+        ),
         'I' => 
         array (
             'Invoker\\' => 8,
@@ -43,7 +47,7 @@ class ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234
         ),
         'onOffice\\SDK\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/SDK/SDK',
+            0 => __DIR__ . '/../..' . '/SDK/src',
         ),
         'Psr\\Container\\' => 
         array (
@@ -56,6 +60,10 @@ class ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234
         'Opis\\Closure\\' => 
         array (
             0 => __DIR__ . '/..' . '/opis/closure/src',
+        ),
+        'Location\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mjaschen/phpgeo/src',
         ),
         'Invoker\\' => 
         array (
@@ -152,6 +160,51 @@ class ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234
         'Invoker\\ParameterResolver\\ResolverChain' => __DIR__ . '/..' . '/php-di/invoker/src/ParameterResolver/ResolverChain.php',
         'Invoker\\ParameterResolver\\TypeHintResolver' => __DIR__ . '/..' . '/php-di/invoker/src/ParameterResolver/TypeHintResolver.php',
         'Invoker\\Reflection\\CallableReflection' => __DIR__ . '/..' . '/php-di/invoker/src/Reflection/CallableReflection.php',
+        'Location\\Bearing\\BearingEllipsoidal' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Bearing/BearingEllipsoidal.php',
+        'Location\\Bearing\\BearingInterface' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Bearing/BearingInterface.php',
+        'Location\\Bearing\\BearingSpherical' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Bearing/BearingSpherical.php',
+        'Location\\Bearing\\DirectVincentyBearing' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Bearing/DirectVincentyBearing.php',
+        'Location\\Bearing\\InverseVincentyBearing' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Bearing/InverseVincentyBearing.php',
+        'Location\\Bounds' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Bounds.php',
+        'Location\\CardinalDirection\\CardinalDirection' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/CardinalDirection/CardinalDirection.php',
+        'Location\\CardinalDirection\\CardinalDirectionDistances' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/CardinalDirection/CardinalDirectionDistances.php',
+        'Location\\CardinalDirection\\CardinalDirectionDistancesCalculator' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/CardinalDirection/CardinalDirectionDistancesCalculator.php',
+        'Location\\Coordinate' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Coordinate.php',
+        'Location\\Direction\\Direction' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Direction/Direction.php',
+        'Location\\Distance\\DistanceInterface' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Distance/DistanceInterface.php',
+        'Location\\Distance\\Haversine' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Distance/Haversine.php',
+        'Location\\Distance\\Vincenty' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Distance/Vincenty.php',
+        'Location\\Ellipsoid' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Ellipsoid.php',
+        'Location\\Exception\\BearingNotAvailableException' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Exception/BearingNotAvailableException.php',
+        'Location\\Exception\\InvalidDistanceException' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Exception/InvalidDistanceException.php',
+        'Location\\Exception\\InvalidGeometryException' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Exception/InvalidGeometryException.php',
+        'Location\\Exception\\InvalidPolygonException' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Exception/InvalidPolygonException.php',
+        'Location\\Exception\\NotConvergingException' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Exception/NotConvergingException.php',
+        'Location\\Exception\\NotMatchingEllipsoidException' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Exception/NotMatchingEllipsoidException.php',
+        'Location\\Factory\\BoundsFactory' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Factory/BoundsFactory.php',
+        'Location\\Factory\\CoordinateFactory' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Factory/CoordinateFactory.php',
+        'Location\\Factory\\GeometryFactoryInterface' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Factory/GeometryFactoryInterface.php',
+        'Location\\Formatter\\Coordinate\\DMS' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Formatter/Coordinate/DMS.php',
+        'Location\\Formatter\\Coordinate\\DecimalDegrees' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Formatter/Coordinate/DecimalDegrees.php',
+        'Location\\Formatter\\Coordinate\\DecimalMinutes' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Formatter/Coordinate/DecimalMinutes.php',
+        'Location\\Formatter\\Coordinate\\FormatterInterface' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Formatter/Coordinate/FormatterInterface.php',
+        'Location\\Formatter\\Coordinate\\GeoJSON' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Formatter/Coordinate/GeoJSON.php',
+        'Location\\Formatter\\Polygon\\FormatterInterface' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Formatter/Polygon/FormatterInterface.php',
+        'Location\\Formatter\\Polygon\\GeoJSON' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Formatter/Polygon/GeoJSON.php',
+        'Location\\Formatter\\Polyline\\FormatterInterface' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Formatter/Polyline/FormatterInterface.php',
+        'Location\\Formatter\\Polyline\\GeoJSON' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Formatter/Polyline/GeoJSON.php',
+        'Location\\GeometryInterface' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/GeometryInterface.php',
+        'Location\\GetBoundsTrait' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/GetBoundsTrait.php',
+        'Location\\Intersection\\Intersection' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Intersection/Intersection.php',
+        'Location\\Line' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Line.php',
+        'Location\\Polygon' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Polygon.php',
+        'Location\\Polyline' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Polyline.php',
+        'Location\\Processor\\Polyline\\SimplifyBearing' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Processor/Polyline/SimplifyBearing.php',
+        'Location\\Processor\\Polyline\\SimplifyDouglasPeucker' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Processor/Polyline/SimplifyDouglasPeucker.php',
+        'Location\\Processor\\Polyline\\SimplifyInterface' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Processor/Polyline/SimplifyInterface.php',
+        'Location\\Utility\\Cartesian' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Utility/Cartesian.php',
+        'Location\\Utility\\PerpendicularDistance' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Utility/PerpendicularDistance.php',
+        'Location\\Utility\\PointToLineDistance' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Utility/PointToLineDistance.php',
         'Opis\\Closure\\Analyzer' => __DIR__ . '/..' . '/opis/closure/src/Analyzer.php',
         'Opis\\Closure\\ClosureContext' => __DIR__ . '/..' . '/opis/closure/src/ClosureContext.php',
         'Opis\\Closure\\ClosureScope' => __DIR__ . '/..' . '/opis/closure/src/ClosureScope.php',
@@ -170,17 +223,17 @@ class ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234
         'Psr\\Container\\ContainerExceptionInterface' => __DIR__ . '/..' . '/psr/container/src/ContainerExceptionInterface.php',
         'Psr\\Container\\ContainerInterface' => __DIR__ . '/..' . '/psr/container/src/ContainerInterface.php',
         'Psr\\Container\\NotFoundExceptionInterface' => __DIR__ . '/..' . '/psr/container/src/NotFoundExceptionInterface.php',
-        'onOffice\\SDK\\Cache\\onOfficeSDKCache' => __DIR__ . '/../..' . '/SDK/SDK/Cache/onOfficeSDKCache.php',
-        'onOffice\\SDK\\Exception\\ApiCallFaultyResponseException' => __DIR__ . '/../..' . '/SDK/SDK/Exception/ApiCallFaultyResponseException.php',
-        'onOffice\\SDK\\Exception\\ApiCallNoActionParametersException' => __DIR__ . '/../..' . '/SDK/SDK/Exception/ApiCallNoActionParametersException.php',
-        'onOffice\\SDK\\Exception\\HttpFetchNoResultException' => __DIR__ . '/../..' . '/SDK/SDK/Exception/HttpFetchNoResultException.php',
-        'onOffice\\SDK\\Exception\\SDKException' => __DIR__ . '/../..' . '/SDK/SDK/Exception/SDKException.php',
-        'onOffice\\SDK\\internal\\ApiAction' => __DIR__ . '/../..' . '/SDK/SDK/internal/ApiAction.php',
-        'onOffice\\SDK\\internal\\ApiCall' => __DIR__ . '/../..' . '/SDK/SDK/internal/ApiCall.php',
-        'onOffice\\SDK\\internal\\HttpFetch' => __DIR__ . '/../..' . '/SDK/SDK/internal/HttpFetch.php',
-        'onOffice\\SDK\\internal\\Request' => __DIR__ . '/../..' . '/SDK/SDK/internal/Request.php',
-        'onOffice\\SDK\\internal\\Response' => __DIR__ . '/../..' . '/SDK/SDK/internal/Response.php',
-        'onOffice\\SDK\\onOfficeSDK' => __DIR__ . '/../..' . '/SDK/SDK/onOfficeSDK.php',
+        'onOffice\\SDK\\Cache\\onOfficeSDKCache' => __DIR__ . '/../..' . '/SDK/src/Cache/onOfficeSDKCache.php',
+        'onOffice\\SDK\\Exception\\ApiCallFaultyResponseException' => __DIR__ . '/../..' . '/SDK/src/Exception/ApiCallFaultyResponseException.php',
+        'onOffice\\SDK\\Exception\\ApiCallNoActionParametersException' => __DIR__ . '/../..' . '/SDK/src/Exception/ApiCallNoActionParametersException.php',
+        'onOffice\\SDK\\Exception\\HttpFetchNoResultException' => __DIR__ . '/../..' . '/SDK/src/Exception/HttpFetchNoResultException.php',
+        'onOffice\\SDK\\Exception\\SDKException' => __DIR__ . '/../..' . '/SDK/src/Exception/SDKException.php',
+        'onOffice\\SDK\\internal\\ApiAction' => __DIR__ . '/../..' . '/SDK/src/internal/ApiAction.php',
+        'onOffice\\SDK\\internal\\ApiCall' => __DIR__ . '/../..' . '/SDK/src/internal/ApiCall.php',
+        'onOffice\\SDK\\internal\\HttpFetch' => __DIR__ . '/../..' . '/SDK/src/internal/HttpFetch.php',
+        'onOffice\\SDK\\internal\\Request' => __DIR__ . '/../..' . '/SDK/src/internal/Request.php',
+        'onOffice\\SDK\\internal\\Response' => __DIR__ . '/../..' . '/SDK/src/internal/Response.php',
+        'onOffice\\SDK\\onOfficeSDK' => __DIR__ . '/../..' . '/SDK/src/onOfficeSDK.php',
         'onOffice\\WPlugin\\API\\APIAvailabilityChecker' => __DIR__ . '/../..' . '/plugin/API/APIAvailabilityChecker.php',
         'onOffice\\WPlugin\\API\\APIClientActionGeneric' => __DIR__ . '/../..' . '/plugin/API/APIClientActionGeneric.php',
         'onOffice\\WPlugin\\API\\APIClientCredentialsException' => __DIR__ . '/../..' . '/plugin/API/APIClientCredentialsException.php',
@@ -367,6 +420,7 @@ class ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234
         'onOffice\\WPlugin\\FilterCall' => __DIR__ . '/../..' . '/plugin/FilterCall.php',
         'onOffice\\WPlugin\\Filter\\DefaultFilterBuilder' => __DIR__ . '/../..' . '/plugin/Filter/DefaultFilterBuilder.php',
         'onOffice\\WPlugin\\Filter\\DefaultFilterBuilderDetailView' => __DIR__ . '/../..' . '/plugin/Filter/DefaultFilterBuilderDetailView.php',
+        'onOffice\\WPlugin\\Filter\\DefaultFilterBuilderDetailViewAddress' => __DIR__ . '/../..' . '/plugin/Filter/DefaultFilterBuilderDetailViewAddress.php',
         'onOffice\\WPlugin\\Filter\\DefaultFilterBuilderFactory' => __DIR__ . '/../..' . '/plugin/Filter/DefaultFilterBuilderFactory.php',
         'onOffice\\WPlugin\\Filter\\DefaultFilterBuilderListView' => __DIR__ . '/../..' . '/plugin/Filter/DefaultFilterBuilderListView.php',
         'onOffice\\WPlugin\\Filter\\DefaultFilterBuilderListViewAddress' => __DIR__ . '/../..' . '/plugin/Filter/DefaultFilterBuilderListViewAddress.php',
@@ -375,6 +429,7 @@ class ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234
         'onOffice\\WPlugin\\Filter\\DefaultFilterBuilderListViewEnvironmentDefault' => __DIR__ . '/../..' . '/plugin/Filter/DefaultFilterBuilderListViewEnvironmentDefault.php',
         'onOffice\\WPlugin\\Filter\\DefaultFilterBuilderPresetEstateIds' => __DIR__ . '/../..' . '/plugin/Filter/DefaultFilterBuilderPresetEstateIds.php',
         'onOffice\\WPlugin\\Filter\\DefaultFilterBuilderSimilarEstates' => __DIR__ . '/../..' . '/plugin/Filter/DefaultFilterBuilderSimilarEstates.php',
+        'onOffice\\WPlugin\\Filter\\EstateFilterBuilderDetailViewAddress' => __DIR__ . '/../..' . '/plugin/Filter/EstateFilterBuilderDetailViewAddress.php',
         'onOffice\\WPlugin\\Filter\\FilterBuilderInputVariables' => __DIR__ . '/../..' . '/plugin/Filter/FilterBuilderInputVariables.php',
         'onOffice\\WPlugin\\Filter\\FilterBuilderInputVariablesFactory' => __DIR__ . '/../..' . '/plugin/Filter/FilterBuilderInputVariablesFactory.php',
         'onOffice\\WPlugin\\Filter\\FilterConfigurationSimilarEstates' => __DIR__ . '/../..' . '/plugin/Filter/FilterConfigurationSimilarEstates.php',
@@ -621,10 +676,10 @@ class ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitf449e6a132a7f7ed4b03cee43b97c234::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -25,6 +25,7 @@ use DI\DependencyException;
 use DI\NotFoundException;
 use Exception;
 use onOffice\SDK\onOfficeSDK;
+use onOffice\WPlugin\Controller\AdminViewController;
 use onOffice\WPlugin\DataFormConfiguration\UnknownFormException;
 use onOffice\WPlugin\Field\Collection\FieldsCollectionBuilderFromNamesForm;
 use onOffice\WPlugin\Field\Collection\FieldsCollectionBuilderShort;
@@ -235,6 +236,10 @@ abstract class AdminPageFormSettingsBase
 			if (array_key_exists(RecordManager::TABLENAME_TASKCONFIG_FORMS, $row)) {
 				$result = $result && $pRecordManagerUpdateForm->updateTasksConfigByRow($row[RecordManager::TABLENAME_TASKCONFIG_FORMS]);
 			}
+
+			if (array_key_exists(RecordManager::TABLENAME_MULTIPAGE_TITLE_FORMS, $row)) {
+				$result = $result && $pRecordManagerUpdateForm->updateMultiPageTitleByRow($row[RecordManager::TABLENAME_MULTIPAGE_TITLE_FORMS]);
+			}
 		} else {
 			$action = RecordManagerFactory::ACTION_INSERT;
 			// insert
@@ -253,6 +258,12 @@ abstract class AdminPageFormSettingsBase
 				$pRecordManagerInsertForm->insertSingleRow($row, RecordManager::TABLENAME_TASKCONFIG_FORMS);
 				$row[RecordManager::TABLENAME_ACTIVITY_CONFIG_FORM]['form_id'] = $recordId;
 				$pRecordManagerInsertForm->insertSingleRow($row, RecordManager::TABLENAME_ACTIVITY_CONFIG_FORM);
+				if (array_key_exists(RecordManager::TABLENAME_MULTIPAGE_TITLE_FORMS, $row) && is_array($row[RecordManager::TABLENAME_MULTIPAGE_TITLE_FORMS])) {
+					foreach ($row[RecordManager::TABLENAME_MULTIPAGE_TITLE_FORMS] as $key => $value) {
+						$value['form_id'] = $recordId;
+						$row[RecordManager::TABLENAME_MULTIPAGE_TITLE_FORMS][$key] = $value;
+					}
+				}
 				$pRecordManagerInsertForm->insertAdditionalValues($row);
 				$result = true;
 			} catch (RecordManagerInsertException $pException) {
@@ -379,6 +390,10 @@ abstract class AdminPageFormSettingsBase
 			'remove_page' => __('Remove Page', 'onoffice-for-wp-websites'),
 			self::VIEW_UNSAVED_CHANGES_MESSAGE => __('Your changes have not been saved yet! Do you want to leave the page without saving?', 'onoffice-for-wp-websites'),
 			self::VIEW_LEAVE_WITHOUT_SAVING_TEXT => __('Leave without saving', 'onoffice-for-wp-websites'),
+			self::VIEW_SAVE_SAME_NAME_MESSAGE => __('There was a problem saving the list. The Name field has been exist.', 'onoffice-for-wp-websites'),
+			self::VIEW_SAVE_EMPTY_NAME_MESSAGE => __('There was a problem saving the list. The Name field must not be empty.', 'onoffice-for-wp-websites'),
+			self::VIEW_UNSAVED_CHANGE_SAME_NAME_MESSAGE => __('Please make sure that no other view with this name exists, even if it has a different type. Do you want to leave the page without saving?', 'onoffice-for-wp-websites'),
+			self::VIEW_UNSAVED_CHANGE_EMPTY_NAME_MESSAGE => __('The Name field must not be empty. Do you want to leave the page without saving?', 'onoffice-for-wp-websites'),
 		];
 	}
 
@@ -740,6 +755,11 @@ abstract class AdminPageFormSettingsBase
 
 	public function doExtraEnqueues()
 	{
+		$screenData = array(
+			'action' => AdminViewController::ACTION_NOTIFICATION_FORM,
+			'name' => 'oopluginforms-name',
+			'ajaxurl' => admin_url('admin-ajax.php')
+		);
 		parent::doExtraEnqueues();
 		wp_enqueue_script('oo-checkbox-js');
 		wp_enqueue_script('onoffice-default-form-values-js');
@@ -754,6 +774,7 @@ abstract class AdminPageFormSettingsBase
 		wp_localize_script('oo-sanitize-shortcode-name', 'shortcode', ['name' => 'oopluginforms-name']);
 		wp_enqueue_script('oo-sanitize-shortcode-name');
 		wp_enqueue_script('oo-copy-shortcode');
+		wp_localize_script('handle-notification-actions', 'screen_data_handle_notification', $screenData);
 
 		if ($this->getType() !== Form::TYPE_APPLICANT_SEARCH) {
 			wp_enqueue_script('select2',  plugin_dir_url( ONOFFICE_PLUGIN_DIR . '/index.php' ) . 'vendor/select2/select2/dist/js/select2.min.js');
@@ -853,9 +874,14 @@ abstract class AdminPageFormSettingsBase
 		echo '<div id="listSettings" style="float:left;" class="postbox">';
 		do_accordion_sections( get_current_screen()->id, 'side', null );
 		echo '</div>';
-		echo '<div class="fieldsSortable postbox">';
-		echo '<h2 class="hndle ui-sortable-handle"><span>' . __( 'Fields',
-				'onoffice-for-wp-websites' ) . '</span></h2>';
+		$this->renderBulkActionControls();
+		echo '<div class="fieldsSortable postbox" id="oo-fields-sortable-container">';
+		echo '<div class="postbox-header">
+        <h2 class="hndle ui-sortable-handle"><span>' . __( 'Fields', 'onoffice-for-wp-websites' ) . '</span></h2>
+		<label class="postbox-select-all" for="postbox-select-all">Alle auswählen
+			<input type="checkbox" id="postbox-select-all" class="oo-sortable-checkbox-master" name="postbox-select-all" onchange="ooHandleMasterCheckboxChange(event)"/>
+			</label>
+      	</div>';
 		$pInputModelRenderer->buildForAjax( $pFormViewSortableFields );
 		echo '</div>';
 		echo '<div class="clear"></div>';
@@ -953,7 +979,7 @@ abstract class AdminPageFormSettingsBase
 			}
 			$values->$fieldName[$key] = $data[$value];
 		}
-	
+
 		return $values;
 	}
 

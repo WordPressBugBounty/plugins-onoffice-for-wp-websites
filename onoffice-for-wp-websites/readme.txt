@@ -4,7 +4,7 @@ Tags: real estate, onoffice
 Requires at least: 4.6
 Tested up to: 6.6.1
 Requires PHP: 7.4
-Stable tag: 5.7
+Stable tag: 6.5.1
 License: AGPL 3.0
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
@@ -75,6 +75,134 @@ Start editing inside the `onoffice-personalized` folder.
 == Screenshots ==
 
 == Changelog ==
+
+= 6.5.1 (2025-09-11) =
+
+**Fixed**
+
+* Title and description tags not loading correctly on multilingual sites when using Yoast tags on both language versions
+* Critical error (UnknownFieldException) when using currency field on property detail pages
+* Browser share functionality on mobile devices (iPhone and Android)
+* Duplicate HTML IDs in backend for "Select All" checkboxes
+
+= 6.5 (2025-08-28) =
+
+**Added**
+
+* Key Facts feature for property lists and detail pages - highlight important fields like price, plot size, or number of rooms to draw visitors attention
+* Multi-field management - select and remove multiple fields at once in field lists for improved efficiency
+* Custom naming for individual pages in multi-page leadgenerator forms for better navigation
+* Info text for total price calculator indicating availability only for Germany due to country-specific requirements
+* Updated accessible-slick slider for improved accessibility including keyboard navigation and ARIA compatibility
+
+**Changed**
+
+* Energy certificate scale values adjusted with unified scale for consumption and demand certificates in residential buildings
+* Improved database migration process for better performance
+* Enhanced test coverage and workflow automation
+* Updated Building.md documentation for development setup
+* Code refactoring for better maintainability, quality and performance across multiple components
+* Improved leadgenerator form with optional API dependencies
+
+**Fixed**
+
+* Forms showing error message despite successful submission
+* Sorting of properties with "price on request" - these are now correctly placed at the end of the list
+* Critical error when "Contact Category Origin" field is deactivated in onOffice enterprise
+* Property status sorting now correctly reflects the configured order in backend settings
+* Added missing property status values to sorting logic
+
+= 6.4 (2025-07-24) =
+
+**Added**
+
+* Ability to reorder entire pages via drag & drop in multi-page forms, allowing for easier reorganization of content
+
+= 6.3.3 (2025-07-17) =
+
+**Added**
+
+* Language support for Dutch
+
+**Changed**
+
+* 'Commission-free', internal commission, and external commission are now displayed in relation to each other
+
+**Fixed**
+
+* SQL Injection Vulnerabilities
+
+= 6.3.2 (2025-07-02) =
+
+**Fixed**
+
+* Fixed submission for honeypot forms
+* Allow nullable default language for Plugin Cache Function
+* Fixed missing Status Properties for estate list and detail page
+* Fixed sendContactForm for AddressDetail Page
+
+= 6.3.1 (2025-07-01) =
+
+**Fixed**
+
+* reCAPTCHA for forms (missing minified JS)
+
+= 6.3 (2025-06-27) =
+
+**Fixed**
+
+* reCAPTCHA for forms
+
+= 6.2 (2025-06-16) = 
+
+**Added**
+
+* Prepared media data for properties to display media information in the property detail page 
+
+**Fixed**
+
+* Load contact person on detail page if its broker and not public
+* Fixed the search parameter for location
+
+= 6.1 (2025-05-28) = 
+
+**Added**
+
+* Info window on maps to property details
+* Language support for Italian
+* Language support for French
+
+**Changed**
+
+* Improve HTML structure of unit lists
+* Improve the Plugins consistency - Ensuring database cleanup on Plugin uninstallation 
+* Permanently Marked Required Fields and Correct Local Area Search in Applicant Forms
+
+**Fixed**
+
+* Bugs for new caching system
+* Persistence of the property list with missing or same name
+
+**Removed**
+
+* "Dreizeiler" field from datatable on estates view
+
+= 6.0 (2025-04-23) =
+
+**Changed**
+
+* Redesigned and significantly more performant caching system.
+
+= 5.8 (2025-04-29) =
+
+**Changed**
+
+* Styling Unit lists on the property detail page
+* Title image, if marked as such, is always displayed as the first image of the image slider
+
+**Fixed**
+
+* Total price calculator can also be displayed when the percentage sign is not entered in the external commission in onOffice enterprise
 
 = 5.7 (2025-03-27) =
 

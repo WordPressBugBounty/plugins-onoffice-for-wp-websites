@@ -199,7 +199,26 @@ abstract class AdminPageAjax
 					if ( is_array( $field ) && ( $index === 'defaultvalue-lang' || $index === 'customlabel-lang' || $index === 'oopluginfieldconfigformdefaultsvalues-value' ) ) {
 						$fields[ $key ] = (object) $field;
 					}
+					if ( is_array( $field ) && ( $index === 'oopluginformmultipagetitle' ) ) {
+						if(!array_key_exists('oopluginformmultipagetitle-value', $result)) {
+							$result['oopluginformmultipagetitle-value'] = [];
+						}
+						if(!array_key_exists('oopluginformmultipagetitle-page', $result)) {
+							$result['oopluginformmultipagetitle-page'] = [];
+						}
+						if(!array_key_exists('oopluginformmultipagetitle-locale', $result)) {
+							$result['oopluginformmultipagetitle-locale'] = [];
+						}
+						foreach ( $field as $loc => $title ) {
+							$result['oopluginformmultipagetitle-value'][] = $title;
+							$result['oopluginformmultipagetitle-page'][] = $key;
+							$result['oopluginformmultipagetitle-locale'][] = $loc;
+						}
+					}
 				}
+			}
+			if($index === 'oopluginformmultipagetitle-page' || $index === 'oopluginformmultipagetitle-locale') {
+				continue;
 			}
 			if ( $index === 'defaultvalue-lang' || $index === 'customlabel-lang' || $index === 'oopluginfieldconfigformdefaultsvalues-value' ) {
 				$result[ $index ] = (object) $fields;
@@ -209,5 +228,29 @@ abstract class AdminPageAjax
 		}
 
 		return $result;
+	}
+
+	protected function renderBulkActionControls($suffix = null, $boxId = null){
+		$selector_id ='oo-bulk-action-selector';
+		$clickCall = 'ooHandleBulkAction()';
+		if($suffix){
+			$selector_id .= '-'.$suffix;
+			if($boxId){
+				$clickCall = "ooHandleBulkAction('".$suffix."','".$boxId."')";
+			}
+			else {
+				$clickCall = "ooHandleBulkAction('".$suffix."')";
+			}
+
+		}
+
+		echo '<div style="float:right; margin-bottom: 20px;" id="oo-bulk-action-container">';
+		echo '<label for="'.$selector_id.'" class="screen-reader-text">'.__('Choose Bulk Actions', 'onoffice-for-wp-websites').'</label>';
+		echo '<select id="'.$selector_id.'">';
+		echo '<option value="-1">'.__('Bulk Actions', 'onoffice-for-wp-websites').'</option>';
+		echo '<option value="bulk_delete">'.__('Delete', 'onoffice-for-wp-websites').'</option>';
+		echo '</select>';
+		echo '<input type="button" id="oo-bulk-action-button" onClick="'.$clickCall.'" class="button action" value="'.__('Apply', 'onoffice-for-wp-websites').'">';
+		echo '</div>';
 	}
 }

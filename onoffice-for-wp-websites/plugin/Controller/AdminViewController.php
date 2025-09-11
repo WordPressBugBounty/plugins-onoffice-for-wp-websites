@@ -97,6 +97,15 @@ class AdminViewController
 	/** @var AdminPageAddress */
 	private $_pAdminPageAddresses = null;
 
+	/** @var string */
+	const ACTION_NOTIFICATION_ESTATE = 'action_notification_estate';
+
+	/** @var string */
+	const ACTION_NOTIFICATION_ADDRESS = 'action_notification_address';
+
+	/** @var string */
+	const ACTION_NOTIFICATION_FORM = 'action_notification_form';
+
 	/**
 	 *
 	 */
@@ -132,6 +141,10 @@ class AdminViewController
 		if ($pSelectedSubPageForAddress instanceof AdminPageAjax) {
 			$this->_ajaxHooks['onoffice_page_'.$this->_pageSlug.'-addresses'] = $pSelectedSubPageForAddress;
 		}
+
+		add_action('wp_ajax_' . self::ACTION_NOTIFICATION_ESTATE, [$this->_pAdminListViewSettings, 'handleNotificationError']);
+		add_action('wp_ajax_' . self::ACTION_NOTIFICATION_ADDRESS, [$this->_pAdminListViewSettingsAddress, 'handleNotificationError']);
+		add_action('wp_ajax_' . self::ACTION_NOTIFICATION_FORM, [$this->_pAdminPageFormSettings, 'handleNotificationError']);
 
 	}
 
@@ -203,26 +216,26 @@ class AdminViewController
 		add_action('current_screen', [$pAdminPageFormList, 'preOutput']);
 
 		// Edit Form (hidden page)
-		$hookEditForm = add_submenu_page(null, null, null, $roleForm, $this->_pageSlug.'-editform',
+		$hookEditForm = add_submenu_page('', null, null, $roleForm, $this->_pageSlug.'-editform',
 			array($this->_pAdminPageFormSettings, 'render'));
 		add_action( 'load-'.$hookEditForm, array($this->_pAdminPageFormSettings, 'initSubClassForGet'));
 		add_action( 'load-'.$hookEditForm, array($this->_pAdminPageFormSettings, 'handleAdminNotices'));
 		add_action( 'load-'.$hookEditForm, array($this->_pAdminPageFormSettings, 'checkForms'));
 
 		// Estates: edit list view (hidden page)
-		$hookEditList = add_submenu_page(null, null, null, $roleEstate, $this->_pageSlug.'-editlistview',
+		$hookEditList = add_submenu_page('', null, null, $roleEstate, $this->_pageSlug.'-editlistview',
 			array($this->_pAdminListViewSettings, 'render'));
 		add_action( 'load-'.$hookEditList, array($this->_pAdminListViewSettings, 'handleAdminNotices'));
 		add_action( 'load-'.$hookEditList, array($this->_pAdminListViewSettings, 'checkForms'));
 
 		// Estates: edit list view (hidden page)
-		$hookEditUnitList = add_submenu_page(null, null, null, $roleEstate, $this->_pageSlug.'-editunitlist',
+		$hookEditUnitList = add_submenu_page('', null, null, $roleEstate, $this->_pageSlug.'-editunitlist',
 			array($this->_pAdminUnitListSettings, 'render'));
 		add_action( 'load-'.$hookEditUnitList, array($this->_pAdminUnitListSettings, 'handleAdminNotices'));
 		add_action( 'load-'.$hookEditUnitList, array($this->_pAdminUnitListSettings, 'checkForms'));
 
 		// Address: edit list view (hidden page)
-		$hookEditAddressList = add_submenu_page(null, null, null, $roleEstate, $this->_pageSlug.'-editlistviewaddress',
+		$hookEditAddressList = add_submenu_page('', null, null, $roleEstate, $this->_pageSlug.'-editlistviewaddress',
 			array($this->_pAdminListViewSettingsAddress, 'render'));
 		add_action( 'load-'.$hookEditAddressList, array($this->_pAdminListViewSettingsAddress, 'handleAdminNotices'));
 		add_action( 'load-'.$hookEditAddressList, array($this->_pAdminListViewSettingsAddress, 'checkForms'));
@@ -329,7 +342,7 @@ class AdminViewController
 	public function enqueue_css()
 	{
 		wp_enqueue_style('onoffice-admin-css',
-			plugins_url('/css/admin.css', ONOFFICE_PLUGIN_DIR.'/index.php'), array(), 'v5.6');
+			plugins_url('/css/admin.css', ONOFFICE_PLUGIN_DIR.'/index.php'), array(), 'v6.4');
 	}
 
 	public function role_styles()  {

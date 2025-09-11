@@ -28,6 +28,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'mjaschen/phpgeo' => array(
+            'pretty_version' => '4.2.1',
+            'version' => '4.2.1.0',
+            'reference' => '5e16834f9433c7780cda7e16aa279814f98ca697',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../mjaschen/phpgeo',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'opis/closure' => array(
             'pretty_version' => '3.6.3',
             'version' => '3.6.3.0',
