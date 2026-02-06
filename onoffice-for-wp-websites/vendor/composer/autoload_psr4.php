@@ -10,8 +10,8 @@ return array(
     'onOffice\\SDK\\' => array($baseDir . '/SDK/src'),
     'Psr\\Container\\' => array($vendorDir . '/psr/container/src'),
     'PhpDocReader\\' => array($vendorDir . '/php-di/phpdoc-reader/src/PhpDocReader'),
-    'Opis\\Closure\\' => array($vendorDir . '/opis/closure/src'),
     'Location\\' => array($vendorDir . '/mjaschen/phpgeo/src'),
+    'Laravel\\SerializableClosure\\' => array($vendorDir . '/laravel/serializable-closure/src'),
     'Invoker\\' => array($vendorDir . '/php-di/invoker/src'),
     'DI\\' => array($vendorDir . '/php-di/php-di/src'),
 );

@@ -11,15 +11,15 @@ msgstr ""
 
 #: 
 msgid "A standard value of 1.5% and 0.5% is usually used to calculate notary and land registry costs."
-msgstr ""
+msgstr "Za izračun troškova javnog bilježnika i zemljišnih knjiga u pravilu se koriste standardne vrijednosti od 1,5% i 0,5%."
 
 #. translators: 1: Count and name of parking lot
 #: 
 msgid "%1$s"
 msgid_plural "%1$s"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%1$s"
+msgstr[1] "%1$s"
+msgstr[2] "%1$s"
 
 #: 
 msgid "Land Register Entry"
@@ -47,7 +47,7 @@ msgstr "Ukupni troškovi"
 
 #: 
 msgid "The fields %1$s, %2$s and %3$s must be filled in onOffice enterprise so that output is possible. %4$s %4$s A standard value of 1.5%% and 0.5%% respectively is typically used to calculate the notary and land registry entry costs."
-msgstr ""
+msgstr "Polja %1$s, %2$s i %3$s moraju biti popunjena u onOffice enterprise-u kako bi bio moguć prikaz. %4$s %4$s Za izračun troškova javnog bilježnika i upisa u zemljišne knjige uobičajeno se koriste standardne vrijednosti od 1,5 %% odnosno 0,5 %%."
 
 #: 
 msgid "Show total price calculator"
@@ -85,6 +85,7 @@ msgstr "Novo prijava na Newsletter"
 msgid "Page "
 msgstr "Stranica "
 
+#. translators: %s: page number
 #: 
 msgid "Page %s"
 msgstr "Stranica %s"
@@ -105,6 +106,7 @@ msgstr "Izbrisati stranicu"
 msgid "Page"
 msgstr "Stranica"
 
+#. translators: %s: type (e.g., estate, address)
 #: 
 msgid "%s list documentation"
 msgstr "%s dokumentacija popisa"
@@ -473,6 +475,7 @@ msgstr "Odaberite opcije"
 msgid "For information on how to use custom fields in your SEO plugin, please refer to its documentation."
 msgstr "Za informacije o tome kako koristiti prilagođena polja u vašem SEO dodatku, molimo pogledajte njegovu dokumentaciju."
 
+#. translators: 1: line break HTML tag, 2-4: code examples of field variables
 #: 
 msgid "An example of integration with the Yoast SEO plugin would be:%1$s %2$s or%1$s %3$s or%1$s %4$s"
 msgstr "Primjer za integraciju s Yoast Seo dodatkom bio bi: %1$s %2$s ili%1$s %3$s ili%1$s %4$s"
@@ -493,6 +496,7 @@ msgstr "Daljne informacije za individualna polja"
 msgid "Social MetaData"
 msgstr "Social MetaData"
 
+#. translators: %s: list of active SEO plugin names
 #: 
 msgid "We have detected an active SEO plugin: %s. This option can lead to conflicts with the SocialMedia Data settings. Therefore they are disabled."
 msgstr "Otkrili smo aktivan SEO dodatak: %s. Ova opcija može dovesti do sukoba s postavkama podataka za društvene mreže. Stoga su one deaktivirane."
@@ -705,6 +709,8 @@ msgstr[0] "%1$s od %2$s%3$s"
 msgstr[1] "%1$s od %2$s svaki%3$s"
 msgstr[2] "%1$s od %2$s svaki%3$s"
 
+#. translators: %s will be replaced with a link to learn more about estate filters
+#. translators: %s is a "Learn more" link
 #: 
 msgid "Choose an estate filter from onOffice enterprise. %s"
 msgstr "Izaberi filter nekretnina od onOffice enterprise. %s"
@@ -725,6 +731,7 @@ msgstr "Plugin nije mogao pronaći %s. Molimo Vas da provjerite jeste li objavil
 msgid "https://wp-plugin.onoffice.com/en/first-steps/estate-lists/"
 msgstr "https://wp-plugin.onoffice.com/en/first-steps/estate-lists/"
 
+#. translators: %s will be replaced with a link to markdown documentation
 #: 
 msgid "Label uses %s"
 msgstr "Oznaka koristi %s"
@@ -785,12 +792,14 @@ msgstr "Naslov i opis"
 msgid "This plugin will fill out the title and description with the information from the estate that is shown. This option is recommended if you are not using a SEO plugin."
 msgstr "Ovaj plugin će ispuniti naslov i opis informacijama o nekretnini koja je prikazana. Ova opcija se preporučuje ako ne koristite neki SEO plugin."
 
+#. translators: %s: list of active SEO plugin names
 #: 
 msgid "We have detected an active SEO plugin: %s. This option can lead to conflicts with the SEO plugin.\n"
 "\t\t\t\t\t\t\t\tWe recommend that you configure the onOffice plugin to not modify the title and description."
 msgstr "Detektirali smo aktivni SEO plugin: %s. Ta opcija može izazvati probleme sa SEO plugin-om.\n"
 "Preporučujemo da konfigurirate onOffice plugin, da ne izmjenjuje naslov i opis."
 
+#. translators: 1: HTML title tag, 2: HTML meta description tag
 #: 
 msgid "The title and description of the detail page are set using the %1$s and %2$s tags. They make it possible to show a summary of the page when you share a link."
 msgstr "Naslov i opis detaljne stranice postavljaju se pomoću oznaka %1$s i %2$s. Omogućavaju prikaz sažetka stranice kada dijelite link."
@@ -899,6 +908,8 @@ msgstr "Prikazati referentne nekretnine (uz ostale)"
 msgid "Hide reference estates"
 msgstr "Sakriti referentne nekretnine"
 
+#. translators: %s will be replaced with a link indicating the access restriction status
+#. translators: %s is a link to the detail page with restriction status
 #: 
 msgid "Reference estates will link to their detail page, because the access is %s."
 msgstr "Referentne nekretnine će spojiti na njihovu detaljnu stranicu, jer je pristup %s."
@@ -907,6 +918,8 @@ msgstr "Referentne nekretnine će spojiti na njihovu detaljnu stranicu, jer je p
 msgid "not restricted"
 msgstr "nije ograničeno"
 
+#. translators: %s will be replaced with a link indicating the access restriction status
+#. translators: %s is a link to the detail page with restriction status
 #: 
 msgid "Reference estates will not link to their detail page, because the access is %s."
 msgstr "Referentne nekretnine neće spojiti na svoju detaljnu stranicu, jer je pristup %s."
@@ -960,10 +973,12 @@ msgstr "Zamijeni E-Mail adresu"
 msgid "Use default email address "
 msgstr "Koristiti zadanu E-Mail adresu "
 
+#. translators: %s will be replaced with the default email address in parentheses
 #: 
 msgid "Use default email address %s"
 msgstr "Koristiti zadanu E-Mail adresu %s"
 
+#. translators: %s: recipient email address
 #: 
 msgid "%s (override)"
 msgstr "%s (zamijeni)"
@@ -1073,6 +1088,7 @@ msgstr "Sve"
 msgid "Popular"
 msgstr "Popularno"
 
+#. translators: %s will be replaced with a link to the Request Manager
 #: 
 msgid "By default, no link is created to the estate when the plugin creates the address. If the contact form is on an detail page and you want to link the address and the requested estate, you can open the email in onOffice enterprise or use the %s."
 msgstr "Po zadanom, nema povezivanja s nekretninom kada plugin stvara kontakt. Ako je kontaktni obrazac na stranici s detaljima i želite povezati kontakt i traženu nekretninu, možete otvoriti E-Mail u onOffice enterprise-u ili koristiti %s."
@@ -1089,6 +1105,7 @@ msgstr "Upravitelj upita"
 msgid "Sorting"
 msgstr "Sortirati"
 
+#. translators: %s: folder path
 #: 
 msgid "(in the folder \"%s\")"
 msgstr "(u mapi \"%s\")"
@@ -1205,6 +1222,7 @@ msgstr "Prilagođena oznaka"
 msgid "Add custom label language"
 msgstr "Dodati prilagođenu oznaku jezika"
 
+#. translators: %s will be replaced with the field name
 #: 
 msgid "Custom Label: %s"
 msgstr "Prilagođena oznaka: %s"
@@ -1773,7 +1791,7 @@ msgid "You are about to delete the listview '%s'\n"
 msgstr "Jeste li sigurni da želite izbrisati prikaz popisa '%s'?\n"
 " Kliknite 'Prekini' za prekid a 'OK' za brisanje."
 
-#: plugin/Gui/Table/WP/ListTable.php:80
+#: 
 msgid "No items found."
 msgstr "Nijedna stavka nije pronađena."
 
@@ -2196,179 +2214,465 @@ msgstr "onOffice za WP Web stranice"
 #. translators: %2$s is the kind of estate, %3$s the markting type, %4$s the city, %5$s is the estate number. Example: House (Sale) in Aachen - JJ12345
 #: plugin/Controller/EstateViewDocumentTitleBuilder.php:65
 msgid "%2$s (%3$s) in %4$s - %5$s"
-msgstr ""
+msgstr "%2$s (%3$s) u %4$s - %5$s"
 
 #: plugin/Gui/AdminPageApiSettings.php:221
 msgid "Search engine"
-msgstr ""
+msgstr "Tražilica"
 
 #: plugin/Gui/AdminPageApiSettings.php:396
 msgid "Favorise"
-msgstr ""
+msgstr "Zapamtiti"
 
 #: plugin/Gui/AdminPageEstateListSettings.php:157
 #: plugin/Gui/AdminPageEstateUnitSettings.php:110
 msgid "Downloadable Documents"
-msgstr ""
+msgstr "Dokumenti za preuzimanje"
 
 #: plugin/Gui/AdminPageEstateListSettings.php:172
 msgid "At least the following fields must be active: country, radius and city or postcode."
-msgstr ""
+msgstr "Najmanje sljedeća polja moraju biti aktivna: država, radijus i mjesto ili poštanski broj."
 
 #: plugin/Gui/AdminPageFormSettingsContact.php:150
 #: plugin/Gui/AdminPageFormSettingsContact.php:161
 msgid "Be aware that when activated the duplicate check can overwrite address records. This function will be removed in the future. Use at your own risk."
-msgstr ""
+msgstr "Imajte na umu da se aktivacijom ove funkcije kontakti u bazi podataka mogu prebrisati. Ova će značajka u budućnosti biti uklonjena. Korištenje je na vlastitu odgovornost."
 
 #: plugin/Gui/Table/EstateListTable.php:215
 msgid "Show Status"
-msgstr ""
+msgstr "Prikazati status"
 
 #: plugin/Model/FormModelBuilder/FormModelBuilderDB.php:152
 msgid "Records per Page"
-msgstr ""
+msgstr "Unosi po stranici"
 
 #: plugin/Model/FormModelBuilder/FormModelBuilderDBAddress.php:233
 #: plugin/Model/FormModelBuilder/FormModelBuilderDBEstateListSettings.php:203
 msgid "Filterable"
-msgstr ""
+msgstr "Mogućnost filtriranja"
 
 #: plugin/Model/FormModelBuilder/FormModelBuilderDBEstateListSettings.php:224
 #: plugin/Model/FormModelBuilder/FormModelBuilderDBForm.php:453
 msgid "Reduce values according to selected filter"
-msgstr ""
+msgstr "Smanjiti vrijednosti u skladu s odabranim filterom"
 
 #: plugin/Model/FormModelBuilder/FormModelBuilderDBEstateListSettings.php:447
 #: plugin/Model/FormModelBuilder/FormModelBuilderEstateDetailSettings.php:161
 msgid "PDF-Expose"
-msgstr ""
+msgstr "PDF brošura"
 
 #: plugin/Model/FormModelBuilder/FormModelBuilderDBEstateListSettings.php:470
 msgid "Reference Estates"
-msgstr ""
+msgstr "Referentne nekretnine"
 
 #: plugin/Model/FormModelBuilder/FormModelBuilderEstateDetailSettings.php:140
 msgid "Allow detail view for reference estates"
-msgstr ""
+msgstr "Prikazati detaljni prikaz za referentne nekretnine"
 
 #: plugin/Model/InputModel/InputModelConfigurationFormContact.php:76
 msgid "Check for Duplicates (override existing address if the email is the same)"
-msgstr ""
+msgstr "Provjera duplikata (može prebrisati zapise kontakta)"
 
 #: templates.dist/address/default.php:39
 msgid "Picture: "
-msgstr ""
+msgstr "Slika: "
 
 #: templates.dist/estate/default.php:120
 #: templates.dist/estate/default.php:143
 msgid "Add to "
-msgstr ""
+msgstr "Dodati kod "
 
 #: templates.dist/estate/default.php:149
 msgid "Remove from "
-msgstr ""
+msgstr "Izbrisati "
 
 #: templates.dist/estate/default_detail.php:77
 msgid "Description"
-msgstr ""
+msgstr "Opis"
 
 #: templates.dist/estate/default_detail.php:84
 msgid "Location"
-msgstr ""
+msgstr "Lokacija"
 
 #: templates.dist/estate/default_detail.php:101
 msgid "Equipment"
-msgstr ""
+msgstr "Osnovni detalji"
 
 #: templates.dist/estate/default_detail.php:108
 msgid "Other Information"
-msgstr ""
+msgstr "Ostale informacije"
 
 #: 
 msgid "There was a problem saving the list. The Name field has been exist."
-msgstr ""
+msgstr "Došlo je do pogreške prilikom spremanja popisa. Polje „Ime“ već postoji."
 
 #: 
 msgid "There was a problem saving the list. The Name field must not be empty."
-msgstr ""
+msgstr "Došlo je do pogreške prilikom spremanja popisa. Polje „Ime“ ne smije biti prazno."
 
 #: 
 msgid "Please make sure that no other view with this name exists, even if it has a different type. Do you want to leave the page without saving?"
-msgstr ""
+msgstr "Molimo provjerite da ne postoji drugi prikaz s istim nazivom, čak i ako je drugačijeg tipa. Želite li napustiti stranicu bez spremanja?"
 
 #: 
 msgid "The Name field must not be empty. Do you want to leave the page without saving?"
-msgstr ""
+msgstr "Polje „Naziv“ ne smije biti prazno. Želite li napustiti stranicu bez spremanja?"
 
 #: 
 msgid "Cache is being cleared in the background. This may take a few minutes."
-msgstr ""
+msgstr "Predmemorija se briše u pozadini. To može potrajati nekoliko minuta."
 
 #: 
 msgid "Save changes"
+msgstr "Spremiti promjene"
+
+#. translators: %d: page number
+#: 
+msgid "Page %d"
+msgstr "Stranica %d"
+
+#: 
+msgid "Choose Bulk Actions"
+msgstr "Izabrati radnju"
+
+#: 
+msgid "Bulk Actions"
+msgstr "Masovne radnje"
+
+#: 
+msgid "Apply"
+msgstr "Primjeniti"
+
+#: 
+msgid "Page title:"
+msgstr "Naslov stranice:"
+
+#. translators: %s will be replaced with the language code or name
+#: 
+msgid "Remove title for language %s"
+msgstr "Izbrisati naslov za jezik %s"
+
+#: 
+msgid "Exklusive"
+msgstr "Ekskuzivne"
+
+#: 
+msgid "Price reduction"
+msgstr "Popust"
+
+#: 
+msgid "Property of the day"
+msgstr "Nekretnina dana"
+
+#: 
+msgid "Property of the week"
+msgstr "Nekretnina tjedna"
+
+#: 
+msgid "Secret sale"
+msgstr "Secret Sale"
+
+#: 
+msgid "Commission free"
+msgstr "Bez provizije"
+
+#. translators: %s will be replaced with the language name
+#: 
+msgid "Page title: %s"
+msgstr "Naslov stranice: %s"
+
+#: 
+msgid "The fields %1$s, %2$s and %3$s must be filled in onOffice enterprise so that output is possible. %4$s %4$s A standard value of 1.5%% and 0.5%% respectively is typically used to calculate the notary and land registry entry costs. %4$s %4$s"
+msgstr "Polja %1$s, %2$s i %3$s moraju biti popunjena u onOffice enterprise-u kako bi bio moguć prikaz. %4$s %4$s Za izračun troškova javnog bilježnika i upisa u zemljišne knjige u pravilu se koriste standardne vrijednosti od 1,5 % odnosno 0,5 %. %4$s %4$s"
+
+#: 
+msgid "The total price calculator is currently only available for Germany, as the calculation of ancillary purchase costs (e.g. land transfer tax, notary fees, broker commission) is based on country-specific specifications."
+msgstr "Kalkulator ukupne cijene trenutačno je dostupan samo za Njemačku, budući da se izračun popratnih troškova (npr. porez na promet nekretnina, javnobilježničke pristojbe, agencijska provizija) temelji na specifičnim propisima pojedine države."
+
+#: 
+msgid "Highlights"
+msgstr "Highlights"
+
+#: 
+msgid "The From value cannot be greater than To value"
+msgstr "Vrijednost „Od“ ne smije biti veća od vrijednosti „Do“."
+
+#: 
+msgid "The fields %s, %s and %s must be filled in onOffice enterprise so that output is possible."
+msgstr "Polja %s, %s i %s moraju biti popunjena u onOffice enterprise-u kako bi bio moguć prikaz."
+
+#: 
+msgid "A standard value of 1.5% and 0.5% respectively is typically used to calculate the notary and land registry entry costs."
+msgstr "Za izračun troškova javnog bilježnika i upisa u zemljišne knjige u pravilu se koriste standardne vrijednosti od 1,5 % odnosno 0,5 %."
+
+#. translators: 1: list of active SEO plugins, 2: link to onOffice plugin settings
+#: 
+msgid "The onOffice plugin has detected an active SEO plugin: %1$s. You currently have configured the onOffice plugin to fill out the title and description of the detail page, which can lead to conflicts with the SEO plugin. We recommend that you go to the %2$s and configure the onOffice plugin to not modify the title and description. This allows you to manage the title and description with your active SEO plugin."
+msgstr ""
+
+#. translators: 1: type (e.g., estate, address), 2: type (e.g., estate, address), 3: link to documentation
+#: 
+msgid "The plugin couldn't find any %1$s. Please make sure that you have published some %1$s, as described in the %2$s"
+msgstr ""
+
+#. translators: 1: type (e.g., estate, address), 2: type (e.g., estate, address), 3: type (e.g., estate, address), 4: type (e.g., estate, address)
+#: 
+msgid "You have opened the detail page, but we do not know which %1$s to show you, because there is no %1$s ID in the URL. Please go to an %1$s list and open an %1$s from there."
+msgstr ""
+
+#. translators: 1: type (e.g., estate, address), 2: link to detail page
+#: 
+msgid "Since you are logged in, here is a link to a random %1$s so that you can preview the detail page: %2$s"
 msgstr ""
 
 #: 
+msgid "Radius (km)"
+msgstr ""
+
+#: 
+msgid "Project ID"
+msgstr ""
+
+#: 
+msgid "API Key"
+msgstr ""
+
+#: 
+msgid "Google reCAPTCHA Enterprise"
+msgstr ""
+
+#: 
+msgid "Google reCAPTCHA Classic"
+msgstr ""
+
+#. translators: %s: URL to the migration guide
+#: 
+msgid "Important Notice: Google will discontinue reCAPTCHA v2/v3 (Classic) on December 31, 2025. Please migrate your projects to reCAPTCHA Enterprise in time to ensure uninterrupted protection. More information at: %s"
+msgstr ""
+
+#: 
+msgid "Migration Guide"
+msgstr ""
+
+#: 
+msgid "Warning"
+msgstr ""
+
+#: 
+msgid "The keys are valid."
+msgstr ""
+
+#: 
+msgid "Error:"
+msgstr ""
+
+#: 
+msgid "The API Key is missing."
+msgstr ""
+
+#: 
+msgid "The reCAPTCHA token is missing."
+msgstr ""
+
+#: 
+msgid "The Project ID is missing."
+msgstr ""
+
+#: 
+msgid "The Site Key is missing."
+msgstr ""
+
+#: 
+msgid "The API Key is invalid."
+msgstr ""
+
+#: 
+msgid "The Project ID is invalid or malformed."
+msgstr ""
+
+#: 
+msgid "The Project ID is invalid or does not exist."
+msgstr ""
+
+#: 
+msgid "The Site Key is invalid."
+msgstr ""
+
+#: 
+msgid "The API Key does not have permission for reCAPTCHA Enterprise."
+msgstr ""
+
+#: 
+msgid "Billing is not enabled for this Google Cloud project."
+msgstr ""
+
+#: 
+msgid "Invalid request. Please check your credentials."
+msgstr ""
+
+#: 
+msgid "The reCAPTCHA token has expired or has already been used."
+msgstr ""
+
+#: 
+msgid "API request failed. Please check your API Key and Project ID."
+msgstr ""
+
+#: 
+msgid "An error occurred while loading reCAPTCHA."
+msgstr ""
+
+#: 
+msgid "Connection to Google reCAPTCHA failed. Please check your internet connection."
+msgstr ""
+
+#: 
+msgid "Too many requests. Please try again later."
+msgstr ""
+
+#: 
+msgid "Google reCAPTCHA server error. Please try again later."
+msgstr ""
+
+#: 
+msgid "In order to use Google reCAPTCHA Enterprise, you need to provide your Project ID and Site Key. You're free to enable it in the form settings for later use."
+msgstr ""
+
+#: 
+msgid "Feld besonders hervorheben"
+msgstr ""
+
+#: 
+msgid "No reCAPTCHA configured"
+msgstr ""
+
+#. translators: %1$s: field name 'kaufpreis', %2$s: field name 'aussen_courtage', %3$s: field name 'bundesland'
+#: 
+msgid "The fields %1$s, %2$s and %3$s must be filled in onOffice enterprise so that output is possible."
+msgstr ""
+
+#: 
+msgid "Post navigation"
+msgstr ""
+
+#. translators: %d: page number
+#: 
+msgctxt "template"
 msgid "Page %d"
 msgstr ""
 
 #: 
-msgid "Choose Bulk Actions"
+msgid "Contact person image"
+msgstr ""
+
+#. translators: %d: address ID number
+#: 
+msgid "Show Details for Address No. %d"
 msgstr ""
 
 #: 
-msgid "Bulk Actions"
+msgid "Map with real estate agents"
+msgstr ""
+
+#. translators: %d: real estate ID number
+#: 
+msgctxt "template"
+msgid "Show Details for Real Estate No. %d"
+msgstr ""
+
+#. translators: %d: real estate ID number
+#: 
+msgctxt "template"
+msgid "Real Estate No. %d"
 msgstr ""
 
 #: 
-msgid "Apply"
+msgid "Real Estate No."
 msgstr ""
 
 #: 
-msgid "Page title:"
+msgid "Details"
 msgstr ""
 
 #: 
-msgid "Remove title for language %s"
+msgid "Zur Einheit"
+msgstr ""
+
+#. translators: %s: real estate ID number
+#: 
+msgctxt "template"
+msgid "Show Details for Real Estate No. %s"
 msgstr ""
 
 #: 
-msgid "Exklusive"
+msgid "Map with properties"
 msgstr ""
 
 #: 
-msgid "Price reduction"
+msgid "Pflichtfeld"
 msgstr ""
 
 #: 
-msgid "Property of the day"
+msgid "Postal code of the property"
 msgstr ""
 
 #: 
-msgid "Property of the week"
+msgid "Postal code"
 msgstr ""
 
 #: 
-msgid "Secret sale"
+msgid "Please select at least one option."
 msgstr ""
 
 #: 
-msgid "Commission free"
+msgid "Please enter a text."
 msgstr ""
 
 #: 
-msgid "Page title: %s"
+msgid "Please agree to the terms and conditions."
 msgstr ""
 
 #: 
-msgid "The fields %1$s, %2$s and %3$s must be filled in onOffice enterprise so that output is possible. %4$s %4$s A standard value of 1.5%% and 0.5%% respectively is typically used to calculate the notary and land registry entry costs. %4$s %4$s"
+msgid "Please select this option."
 msgstr ""
 
 #: 
-msgid "The total price calculator is currently only available for Germany, as the calculation of ancillary purchase costs (e.g. land transfer tax, notary fees, broker commission) is based on country-specific specifications."
+msgid "Please enter a valid e-mail address."
 msgstr ""
 
 #: 
-msgid "Highlights"
+msgid "Thank you for your inquiry. We will get back to you as soon as possible."
+msgstr ""
+
+#: 
+msgid "An error has occurred. Please check your details."
+msgstr ""
+
+#: 
+msgid "Not all mandatory fields have been filled out. Please check your entries."
+msgstr ""
+
+#: 
+msgid "Spam recognized!"
+msgstr ""
+
+#: 
+msgid "* Mandatory fields"
+msgstr ""
+
+#: 
+msgid "Ort der Immobilie"
+msgstr ""
+
+#: 
+msgid "PLZ der Immobilie"
+msgstr ""
+
+#: 
+msgid "Straße der Immobilie"
+msgstr ""
+
+#: 
+msgid "Hausnummer der Immobilie"
 msgstr ""
 

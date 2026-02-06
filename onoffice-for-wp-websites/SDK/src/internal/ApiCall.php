@@ -298,7 +298,8 @@ class ApiCall
 			$itemRaw = $filteredArrayRaw[$k];
 			if($itemRaw == null)
 			{
-				error_log("Error in ApiCall by filtering records: ItemRaw is null");
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging critical API errors
+    			error_log("Error in ApiCall by filtering records: ItemRaw is null");
 				continue;
 			}
 			foreach($filter as $fieldName => $value) {
@@ -412,7 +413,7 @@ class ApiCall
 								unset($filteredArray[$index]);
 								break;
 							}
-						} elseif(!array_key_exists($fieldName,$itemRaw["elements"]) || !str_contains($itemRaw["elements"][$fieldName], $val)){
+						} elseif(!array_key_exists($fieldName,$itemRaw["elements"]) || stripos($itemRaw["elements"][$fieldName], $val) === false){
 							unset($filteredArray[$index]);
 							break;
 						}
@@ -657,6 +658,7 @@ class ApiCall
 
 			if (!$pResponse->isValid())
 			{
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message is for internal debugging only
 				throw new ApiCallFaultyResponseException('Handle: '.$handle);
 			}
 

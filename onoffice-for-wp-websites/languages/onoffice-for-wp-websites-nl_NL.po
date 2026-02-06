@@ -84,6 +84,7 @@ msgstr "Nieuwe nieuwsbriefregistratie"
 msgid "Page "
 msgstr "Pagina "
 
+#. translators: %s: page number
 #: 
 msgid "Page %s"
 msgstr "Pagina %s"
@@ -104,6 +105,7 @@ msgstr "Pagina verwijderen"
 msgid "Page"
 msgstr "Pagina"
 
+#. translators: %s: type (e.g., estate, address)
 #: 
 msgid "%s list documentation"
 msgstr "%s lijstdocumentatie"
@@ -472,6 +474,7 @@ msgstr "Selecteer enkele opties"
 msgid "For information on how to use custom fields in your SEO plugin, please refer to its documentation."
 msgstr "Voor informatie over het gebruik van aangepaste velden in uw SEO-plugin, raadpleeg de documentatie ervan."
 
+#. translators: 1: line break HTML tag, 2-4: code examples of field variables
 #: 
 msgid "An example of integration with the Yoast SEO plugin would be:%1$s %2$s or%1$s %3$s or%1$s %4$s"
 msgstr "Een voorbeeld van integratie met de Yoast SEO-plugin zou zijn: %1$s %2$s of%1$s %3$s of%1$s %4$s"
@@ -492,6 +495,7 @@ msgstr "Meer informatie over aangepaste velden"
 msgid "Social MetaData"
 msgstr "Sociale metadata"
 
+#. translators: %s: list of active SEO plugin names
 #: 
 msgid "We have detected an active SEO plugin: %s. This option can lead to conflicts with the SocialMedia Data settings. Therefore they are disabled."
 msgstr "We hebben een actieve SEO-plugin gedetecteerd: %s. Deze optie kan leiden tot conflicten met de SocialMedia Data-instellingen. Daarom zijn ze uitgeschakeld."
@@ -695,6 +699,8 @@ msgid_plural "%1$s, %2$s %3$s"
 msgstr[0] "%1$s, %2$s%3$s"
 msgstr[1] "%1$s, %2$s%3$s"
 
+#. translators: %s will be replaced with a link to learn more about estate filters
+#. translators: %s is a "Learn more" link
 #: 
 msgid "Choose an estate filter from onOffice enterprise. %s"
 msgstr "Kies een objectfilter uit onOffice enterprise. %s"
@@ -715,6 +721,7 @@ msgstr "De plugin kon geen %s vinden. Zorg ervoor dat u enkele %s heeft gepublic
 msgid "https://wp-plugin.onoffice.com/en/first-steps/estate-lists/"
 msgstr "https://wp-plugin.onoffice.com/nl/eerste-stappen/objectlijsten/"
 
+#. translators: %s will be replaced with a link to markdown documentation
 #: 
 msgid "Label uses %s"
 msgstr "Label gebruikt %s"
@@ -775,12 +782,14 @@ msgstr "Titel en beschrijving"
 msgid "This plugin will fill out the title and description with the information from the estate that is shown. This option is recommended if you are not using a SEO plugin."
 msgstr "Deze plugin vult de titel en beschrijving aan met de informatie van het getoonde object. Deze optie wordt aanbevolen als u geen SEO-plugin gebruikt."
 
+#. translators: %s: list of active SEO plugin names
 #: 
 msgid "We have detected an active SEO plugin: %s. This option can lead to conflicts with the SEO plugin.\n"
 "\t\t\t\t\t\t\t\tWe recommend that you configure the onOffice plugin to not modify the title and description."
 msgstr "We hebben een actieve SEO-plugin gedetecteerd: %s. Deze optie kan leiden tot conflicten met de SEO-plugin.\n"
 "\t\t\t\t\t\t\t\tWij adviseren u de onOffice-plugin zo te configureren dat deze de titel en beschrijving niet wijzigt."
 
+#. translators: 1: HTML title tag, 2: HTML meta description tag
 #: 
 msgid "The title and description of the detail page are set using the %1$s and %2$s tags. They make it possible to show a summary of the page when you share a link."
 msgstr "De titel en beschrijving van de detailpagina worden ingesteld met behulp van de %1$s en %2$s tags. Ze maken het mogelijk om een samenvatting van de pagina te tonen wanneer u een link deelt."
@@ -889,6 +898,8 @@ msgstr "Referentie objecten weergeven (naast andere)"
 msgid "Hide reference estates"
 msgstr "Referentie objecten verbergen"
 
+#. translators: %s will be replaced with a link indicating the access restriction status
+#. translators: %s is a link to the detail page with restriction status
 #: 
 msgid "Reference estates will link to their detail page, because the access is %s."
 msgstr "Referentie objecten linken naar hun detailpagina, omdat de toegang %s is."
@@ -897,6 +908,8 @@ msgstr "Referentie objecten linken naar hun detailpagina, omdat de toegang %s is
 msgid "not restricted"
 msgstr "niet beperkt"
 
+#. translators: %s will be replaced with a link indicating the access restriction status
+#. translators: %s is a link to the detail page with restriction status
 #: 
 msgid "Reference estates will not link to their detail page, because the access is %s."
 msgstr "Referentie objecten linken niet naar hun detailpagina, omdat de toegang %s is."
@@ -950,10 +963,12 @@ msgstr "E-mailadres overschrijven"
 msgid "Use default email address "
 msgstr "Gebruik standaard e-mailadres "
 
+#. translators: %s will be replaced with the default email address in parentheses
 #: 
 msgid "Use default email address %s"
 msgstr "Gebruik standaard e-mailadres %s"
 
+#. translators: %s: recipient email address
 #: 
 msgid "%s (override)"
 msgstr "%s (overschreven)"
@@ -1063,6 +1078,7 @@ msgstr "Alle"
 msgid "Popular"
 msgstr "Populair"
 
+#. translators: %s will be replaced with a link to the Request Manager
 #: 
 msgid "By default, no link is created to the estate when the plugin creates the address. If the contact form is on an detail page and you want to link the address and the requested estate, you can open the email in onOffice enterprise or use the %s."
 msgstr "Standaard wordt er geen link naar het object gemaakt wanneer de plugin het adres aanmaakt. Als het contactformulier op een detailpagina staat en u het adres en het aangevraagde object wilt koppelen, kunt u de e-mail in onOffice enterprise openen of de %s gebruiken."
@@ -1079,6 +1095,7 @@ msgstr "Aanvragenbeheerder"
 msgid "Sorting"
 msgstr "Sortering"
 
+#. translators: %s: folder path
 #: 
 msgid "(in the folder \"%s\")"
 msgstr "(in de map \"%s\")"
@@ -1195,6 +1212,7 @@ msgstr "Aangepast label"
 msgid "Add custom label language"
 msgstr "Aangepaste labeltaal toevoegen"
 
+#. translators: %s will be replaced with the field name
 #: 
 msgid "Custom Label: %s"
 msgstr "Aangepast label: %s"
@@ -1760,7 +1778,7 @@ msgid "You are about to delete the listview '%s'\n"
 msgstr "U staat op het punt de lijstweergave '%s' te verwijderen.\n"
 "  'Annuleren' om te stoppen, 'OK' om te verwijderen."
 
-#: plugin/Gui/Table/WP/ListTable.php:80
+#: 
 msgid "No items found."
 msgstr "Geen items gevonden."
 
@@ -2287,67 +2305,353 @@ msgstr "Cache wordt op de achtergrond geleegd. Dit kan enkele minuten duren."
 msgid "Save changes"
 msgstr "Wijzigingen opslaan"
 
+#. translators: %d: page number
 #: 
+msgid "Page %d"
+msgstr "Pagina %d"
+
+#: 
+msgid "Choose Bulk Actions"
+msgstr "Kies bulkacties"
+
+#: 
+msgid "Bulk Actions"
+msgstr "Bulkacties"
+
+#: 
+msgid "Apply"
+msgstr "Toepassen"
+
+#: 
+msgid "Page title:"
+msgstr "Paginatitel:"
+
+#. translators: %s will be replaced with the language code or name
+#: 
+msgid "Remove title for language %s"
+msgstr "Titel verwijderen voor taal %s"
+
+#: 
+msgid "Exklusive"
+msgstr "Exclusief"
+
+#: 
+msgid "Price reduction"
+msgstr "Prijsverlaging"
+
+#: 
+msgid "Property of the day"
+msgstr "Woning van de dag"
+
+#: 
+msgid "Property of the week"
+msgstr "Woning van de week"
+
+#: 
+msgid "Secret sale"
+msgstr "Geheime verkoop"
+
+#: 
+msgid "Commission free"
+msgstr "Commissievrij"
+
+#. translators: %s will be replaced with the language name
+#: 
+msgid "Page title: %s"
+msgstr "Paginatitel: %s"
+
+#: 
+msgid "The fields %1$s, %2$s and %3$s must be filled in onOffice enterprise so that output is possible. %4$s %4$s A standard value of 1.5%% and 0.5%% respectively is typically used to calculate the notary and land registry entry costs. %4$s %4$s"
+msgstr "De velden %1$s, %2$s en %3$s moeten ingevuld worden in onOffice enterprise zodat uitvoer mogelijk is. %4$s %4$s Een standaardwaarde van respectievelijk 1.5%% en 0.5%% wordt doorgaans gebruikt om de notariskosten en de kosten voor inschrijving in het kadaster te berekenen. %4$s %4$s"
+
+#: 
+msgid "The total price calculator is currently only available for Germany, as the calculation of ancillary purchase costs (e.g. land transfer tax, notary fees, broker commission) is based on country-specific specifications."
+msgstr "De totale prijscalculator is momenteel alleen beschikbaar voor Duitsland, aangezien de berekening van bijkomende aankoopkosten (bijv. overdrachtsbelasting, notariskosten, makelaarscourtage) gebaseerd is op landspecifieke bepalingen."
+
+#: 
+msgid "Highlights"
+msgstr "Hoogtepunten"
+
+#: 
+msgid "The From value cannot be greater than To value"
+msgstr "De 'Van'-waarde mag niet groter zijn dan de 'Tot'-waarde"
+
+#: 
+msgid "The fields %s, %s and %s must be filled in onOffice enterprise so that output is possible."
+msgstr "De velden %s, %s en %s moeten ingevuld worden in onOffice enterprise zodat uitvoer mogelijk is."
+
+#: 
+msgid "A standard value of 1.5% and 0.5% respectively is typically used to calculate the notary and land registry entry costs."
+msgstr "Een standaardwaarde van respectievelijk 1.5% en 0.5% wordt doorgaans gebruikt om de notariskosten en de kosten voor inschrijving in het kadaster te berekenen."
+
+#. translators: 1: list of active SEO plugins, 2: link to onOffice plugin settings
+#: 
+msgid "The onOffice plugin has detected an active SEO plugin: %1$s. You currently have configured the onOffice plugin to fill out the title and description of the detail page, which can lead to conflicts with the SEO plugin. We recommend that you go to the %2$s and configure the onOffice plugin to not modify the title and description. This allows you to manage the title and description with your active SEO plugin."
+msgstr ""
+
+#. translators: 1: type (e.g., estate, address), 2: type (e.g., estate, address), 3: link to documentation
+#: 
+msgid "The plugin couldn't find any %1$s. Please make sure that you have published some %1$s, as described in the %2$s"
+msgstr ""
+
+#. translators: 1: type (e.g., estate, address), 2: type (e.g., estate, address), 3: type (e.g., estate, address), 4: type (e.g., estate, address)
+#: 
+msgid "You have opened the detail page, but we do not know which %1$s to show you, because there is no %1$s ID in the URL. Please go to an %1$s list and open an %1$s from there."
+msgstr ""
+
+#. translators: 1: type (e.g., estate, address), 2: link to detail page
+#: 
+msgid "Since you are logged in, here is a link to a random %1$s so that you can preview the detail page: %2$s"
+msgstr ""
+
+#: 
+msgid "Radius (km)"
+msgstr ""
+
+#: 
+msgid "Project ID"
+msgstr ""
+
+#: 
+msgid "API Key"
+msgstr ""
+
+#: 
+msgid "Google reCAPTCHA Enterprise"
+msgstr ""
+
+#: 
+msgid "Google reCAPTCHA Classic"
+msgstr ""
+
+#. translators: %s: URL to the migration guide
+#: 
+msgid "Important Notice: Google will discontinue reCAPTCHA v2/v3 (Classic) on December 31, 2025. Please migrate your projects to reCAPTCHA Enterprise in time to ensure uninterrupted protection. More information at: %s"
+msgstr ""
+
+#: 
+msgid "Migration Guide"
+msgstr ""
+
+#: 
+msgid "Warning"
+msgstr ""
+
+#: 
+msgid "The keys are valid."
+msgstr ""
+
+#: 
+msgid "Error:"
+msgstr ""
+
+#: 
+msgid "The API Key is missing."
+msgstr ""
+
+#: 
+msgid "The reCAPTCHA token is missing."
+msgstr ""
+
+#: 
+msgid "The Project ID is missing."
+msgstr ""
+
+#: 
+msgid "The Site Key is missing."
+msgstr ""
+
+#: 
+msgid "The API Key is invalid."
+msgstr ""
+
+#: 
+msgid "The Project ID is invalid or malformed."
+msgstr ""
+
+#: 
+msgid "The Project ID is invalid or does not exist."
+msgstr ""
+
+#: 
+msgid "The Site Key is invalid."
+msgstr ""
+
+#: 
+msgid "The API Key does not have permission for reCAPTCHA Enterprise."
+msgstr ""
+
+#: 
+msgid "Billing is not enabled for this Google Cloud project."
+msgstr ""
+
+#: 
+msgid "Invalid request. Please check your credentials."
+msgstr ""
+
+#: 
+msgid "The reCAPTCHA token has expired or has already been used."
+msgstr ""
+
+#: 
+msgid "API request failed. Please check your API Key and Project ID."
+msgstr ""
+
+#: 
+msgid "An error occurred while loading reCAPTCHA."
+msgstr ""
+
+#: 
+msgid "Connection to Google reCAPTCHA failed. Please check your internet connection."
+msgstr ""
+
+#: 
+msgid "Too many requests. Please try again later."
+msgstr ""
+
+#: 
+msgid "Google reCAPTCHA server error. Please try again later."
+msgstr ""
+
+#: 
+msgid "In order to use Google reCAPTCHA Enterprise, you need to provide your Project ID and Site Key. You're free to enable it in the form settings for later use."
+msgstr ""
+
+#: 
+msgid "Feld besonders hervorheben"
+msgstr ""
+
+#: 
+msgid "No reCAPTCHA configured"
+msgstr ""
+
+#. translators: %1$s: field name 'kaufpreis', %2$s: field name 'aussen_courtage', %3$s: field name 'bundesland'
+#: 
+msgid "The fields %1$s, %2$s and %3$s must be filled in onOffice enterprise so that output is possible."
+msgstr ""
+
+#: 
+msgid "Post navigation"
+msgstr ""
+
+#. translators: %d: page number
+#: 
+msgctxt "template"
 msgid "Page %d"
 msgstr ""
 
 #: 
-msgid "Choose Bulk Actions"
+msgid "Contact person image"
+msgstr ""
+
+#. translators: %d: address ID number
+#: 
+msgid "Show Details for Address No. %d"
 msgstr ""
 
 #: 
-msgid "Bulk Actions"
+msgid "Map with real estate agents"
+msgstr ""
+
+#. translators: %d: real estate ID number
+#: 
+msgctxt "template"
+msgid "Show Details for Real Estate No. %d"
+msgstr ""
+
+#. translators: %d: real estate ID number
+#: 
+msgctxt "template"
+msgid "Real Estate No. %d"
 msgstr ""
 
 #: 
-msgid "Apply"
+msgid "Real Estate No."
 msgstr ""
 
 #: 
-msgid "Page title:"
+msgid "Details"
 msgstr ""
 
 #: 
-msgid "Remove title for language %s"
+msgid "Zur Einheit"
+msgstr ""
+
+#. translators: %s: real estate ID number
+#: 
+msgctxt "template"
+msgid "Show Details for Real Estate No. %s"
 msgstr ""
 
 #: 
-msgid "Exklusive"
+msgid "Map with properties"
 msgstr ""
 
 #: 
-msgid "Price reduction"
+msgid "Pflichtfeld"
 msgstr ""
 
 #: 
-msgid "Property of the day"
+msgid "Postal code of the property"
 msgstr ""
 
 #: 
-msgid "Property of the week"
+msgid "Postal code"
 msgstr ""
 
 #: 
-msgid "Secret sale"
+msgid "Please select at least one option."
 msgstr ""
 
 #: 
-msgid "Commission free"
+msgid "Please enter a text."
 msgstr ""
 
 #: 
-msgid "Page title: %s"
+msgid "Please agree to the terms and conditions."
 msgstr ""
 
 #: 
-msgid "The fields %1$s, %2$s and %3$s must be filled in onOffice enterprise so that output is possible. %4$s %4$s A standard value of 1.5%% and 0.5%% respectively is typically used to calculate the notary and land registry entry costs. %4$s %4$s"
+msgid "Please select this option."
 msgstr ""
 
 #: 
-msgid "The total price calculator is currently only available for Germany, as the calculation of ancillary purchase costs (e.g. land transfer tax, notary fees, broker commission) is based on country-specific specifications."
+msgid "Please enter a valid e-mail address."
 msgstr ""
 
 #: 
-msgid "Highlights"
+msgid "Thank you for your inquiry. We will get back to you as soon as possible."
+msgstr ""
+
+#: 
+msgid "An error has occurred. Please check your details."
+msgstr ""
+
+#: 
+msgid "Not all mandatory fields have been filled out. Please check your entries."
+msgstr ""
+
+#: 
+msgid "Spam recognized!"
+msgstr ""
+
+#: 
+msgid "* Mandatory fields"
+msgstr ""
+
+#: 
+msgid "Ort der Immobilie"
+msgstr ""
+
+#: 
+msgid "PLZ der Immobilie"
+msgstr ""
+
+#: 
+msgid "Straße der Immobilie"
+msgstr ""
+
+#: 
+msgid "Hausnummer der Immobilie"
 msgstr ""
 

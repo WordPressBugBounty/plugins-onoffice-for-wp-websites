@@ -375,6 +375,7 @@ class FormModelBuilderDBForm
 
 		$selectedValue = $this->getValue('default_recipient', true);
 		if (!$isDefaultEmailMissing) {
+			/* translators: %s will be replaced with the default email address in parentheses */
 			$labelDefaultData = sprintf(__('Use default email address %s', 'onoffice-for-wp-websites'), $addition);
 			$pInputModelFormDefaultData = $this->generateGenericCheckbox($labelDefaultData,
 				InputModelDBFactoryConfigForm::INPUT_FORM_DEFAULT_RECIPIENT, $selectedValue);
@@ -427,24 +428,35 @@ class FormModelBuilderDBForm
 	 * @return InputModelDB
 	 * @throws Exception
 	 */
-	public function createInputModelCaptchaRequired(): InputModelDB
-	{
-		$addition = '';
+    public function createInputModelCaptchaRequired(): InputModelDB
+    {
+        $addition = '';
 
-		if (get_option('onoffice-settings-captcha-sitekey', '') === '') {
-			$addition = __('(won\'t work until set up globally)', 'onoffice-for-wp-websites');
-		}
+        // Check if Enterprise reCAPTCHA is configured
+        $enterpriseSiteKey = get_option('onoffice-settings-captcha-enterprise-sitekey', '');
+        $enterpriseProjectId = get_option('onoffice-settings-captcha-enterprise-projectid', '');
+        $enterpriseApiKey = get_option('onoffice-settings-captcha-enterprise-apikey', '');
+        
+        $hasEnterprise = !empty($enterpriseSiteKey) && !empty($enterpriseProjectId) && !empty($enterpriseApiKey);
+        
+        // TODO: Remove classic check after Enterprise reCAPTCHA is fully rolled out
+        $hasClassic = get_option('onoffice-settings-captcha-sitekey', '') !== '';
+        
+        if (!$hasEnterprise && !$hasClassic) {
+            $addition = '<br><span style="color:red;">(' . 
+                esc_html__('No reCAPTCHA configured', 'onoffice-for-wp-websites') . 
+                ')</span>';
+        }
 
-		/* translators: %s will be replaced with the translation of
-			'(won't work until set up globally)', if captcha hasn't been set up appropriately yet,
-			or blank otherwise. */
-		$labelRequiresCaptcha = sprintf(__('Requires Captcha %s', 'onoffice-for-wp-websites'), $addition);
-		$selectedValue = $this->getValue('captcha', false);
-		$pInputModelFormRequiresCaptcha = $this->generateGenericCheckbox($labelRequiresCaptcha,
-			InputModelDBFactoryConfigForm::INPUT_FORM_REQUIRES_CAPTCHA, $selectedValue);
+        /* translators: %s will be replaced with a warning message if no reCAPTCHA is configured,
+           or blank otherwise. */
+        $labelRequiresCaptcha = sprintf(__('Requires Captcha %s', 'onoffice-for-wp-websites'), $addition);
+        $selectedValue = $this->getValue('captcha', false);
+        $pInputModelFormRequiresCaptcha = $this->generateGenericCheckbox($labelRequiresCaptcha,
+            InputModelDBFactoryConfigForm::INPUT_FORM_REQUIRES_CAPTCHA, $selectedValue);
 
-		return $pInputModelFormRequiresCaptcha;
-	}
+        return $pInputModelFormRequiresCaptcha;
+    }
 
 	/**
 	 * @return InputModelDB
@@ -584,6 +596,7 @@ class FormModelBuilderDBForm
 		$text = __( 'Markdown', 'onoffice-for-wp-websites' );
 		$linkMarkdown = sprintf( '<a href="' . __( 'https://wp-plugin.onoffice.com/en/advanced-features/markdown-labels',
 				'onoffice-for-wp-websites' ) . '">%s</a>', $text );
+		/* translators: %s will be replaced with a link to markdown documentation */
 		$label = sprintf( __( 'Label uses %s', 'onoffice-for-wp-websites' ), $linkMarkdown );
 		$type = InputModelDBFactoryConfigForm::INPUT_FORM_MARK_DOWN;
 		/* @var $pInputModel InputModelDB */
@@ -729,6 +742,7 @@ class FormModelBuilderDBForm
 			$pInputModel->setLabel(__('Page title:', 'onoffice-for-wp-websites'));
 		} else {
 			$languages = $this->getAvailableLanguageSelectValues();
+			/* translators: %s will be replaced with the language name */
 			$pInputModel->setLabel(sprintf(__('Page title: %s', 'onoffice-for-wp-websites'), $languages[$locale]));
 		}
 		$pInputModel->setValue($value);
@@ -778,7 +792,8 @@ class FormModelBuilderDBForm
 				break;
 			}
 		}
-		$moduleTranslated = __(ModuleTranslation::getLabelSingular($module ?? ''), 'onoffice-for-wp-websites');
+		$moduleTranslated = ModuleTranslation::getLabelSingular($module ?? '');
+		/* translators: %s will be replaced with the translated module name */
 		$label = sprintf(__('Module: %s', 'onoffice-for-wp-websites'), $moduleTranslated);
 		$pInputModel->setLabel($label);
 		$pInputModel->setValue($module);
@@ -1047,7 +1062,7 @@ class FormModelBuilderDBForm
 		$pInputModelOriginContact->setHtmlType(InputModelBase::HTML_TYPE_SELECT);
 		$pInputModelOriginContact->setValue($this->getValue('origincontact') ?? '');
 		$defaultOriginContact = ['' => __('Please choose', 'onoffice-for-wp-websites')]
-			+ $this->_originContact['permittedvalues'];
+			+ ($this->_originContact['permittedvalues'] ?? []);
 		$pInputModelOriginContact->setValuesAvailable($defaultOriginContact ?? []);
 
 		return $pInputModelOriginContact;

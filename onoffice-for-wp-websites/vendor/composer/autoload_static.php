@@ -4,81 +4,77 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576
+class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
 {
     public static $files = array (
-        '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
         'b33e3d135e5d9e47d845c576147bda89' => __DIR__ . '/..' . '/php-di/php-di/src/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
-        'o' => 
+        'o' =>
         array (
             'onOffice\\WPlugin\\' => 17,
             'onOffice\\SDK\\' => 13,
         ),
-        'P' => 
+        'P' =>
         array (
             'Psr\\Container\\' => 14,
             'PhpDocReader\\' => 13,
         ),
-        'O' => 
-        array (
-            'Opis\\Closure\\' => 13,
-        ),
-        'L' => 
+        'L' =>
         array (
             'Location\\' => 9,
+            'Laravel\\SerializableClosure\\' => 28,
         ),
-        'I' => 
+        'I' =>
         array (
             'Invoker\\' => 8,
         ),
-        'D' => 
+        'D' =>
         array (
             'DI\\' => 3,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'onOffice\\WPlugin\\' => 
+        'onOffice\\WPlugin\\' =>
         array (
             0 => __DIR__ . '/../..' . '/plugin',
         ),
-        'onOffice\\SDK\\' => 
+        'onOffice\\SDK\\' =>
         array (
             0 => __DIR__ . '/../..' . '/SDK/src',
         ),
-        'Psr\\Container\\' => 
+        'Psr\\Container\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
         ),
-        'PhpDocReader\\' => 
+        'PhpDocReader\\' =>
         array (
             0 => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader',
         ),
-        'Opis\\Closure\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/opis/closure/src',
-        ),
-        'Location\\' => 
+        'Location\\' =>
         array (
             0 => __DIR__ . '/..' . '/mjaschen/phpgeo/src',
         ),
-        'Invoker\\' => 
+        'Laravel\\SerializableClosure\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/laravel/serializable-closure/src',
+        ),
+        'Invoker\\' =>
         array (
             0 => __DIR__ . '/..' . '/php-di/invoker/src',
         ),
-        'DI\\' => 
+        'DI\\' =>
         array (
             0 => __DIR__ . '/..' . '/php-di/php-di/src',
         ),
     );
 
     public static $prefixesPsr0 = array (
-        'P' => 
+        'P' =>
         array (
-            'Parsedown' => 
+            'Parsedown' =>
             array (
                 0 => __DIR__ . '/..' . '/erusev/parsedown',
             ),
@@ -160,6 +156,20 @@ class ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576
         'Invoker\\ParameterResolver\\ResolverChain' => __DIR__ . '/..' . '/php-di/invoker/src/ParameterResolver/ResolverChain.php',
         'Invoker\\ParameterResolver\\TypeHintResolver' => __DIR__ . '/..' . '/php-di/invoker/src/ParameterResolver/TypeHintResolver.php',
         'Invoker\\Reflection\\CallableReflection' => __DIR__ . '/..' . '/php-di/invoker/src/Reflection/CallableReflection.php',
+        'Laravel\\SerializableClosure\\Contracts\\Serializable' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Contracts/Serializable.php',
+        'Laravel\\SerializableClosure\\Contracts\\Signer' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Contracts/Signer.php',
+        'Laravel\\SerializableClosure\\Exceptions\\InvalidSignatureException' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Exceptions/InvalidSignatureException.php',
+        'Laravel\\SerializableClosure\\Exceptions\\MissingSecretKeyException' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Exceptions/MissingSecretKeyException.php',
+        'Laravel\\SerializableClosure\\Exceptions\\PhpVersionNotSupportedException' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Exceptions/PhpVersionNotSupportedException.php',
+        'Laravel\\SerializableClosure\\SerializableClosure' => __DIR__ . '/..' . '/laravel/serializable-closure/src/SerializableClosure.php',
+        'Laravel\\SerializableClosure\\Serializers\\Native' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Serializers/Native.php',
+        'Laravel\\SerializableClosure\\Serializers\\Signed' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Serializers/Signed.php',
+        'Laravel\\SerializableClosure\\Signers\\Hmac' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Signers/Hmac.php',
+        'Laravel\\SerializableClosure\\Support\\ClosureScope' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Support/ClosureScope.php',
+        'Laravel\\SerializableClosure\\Support\\ClosureStream' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Support/ClosureStream.php',
+        'Laravel\\SerializableClosure\\Support\\ReflectionClosure' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Support/ReflectionClosure.php',
+        'Laravel\\SerializableClosure\\Support\\SelfReference' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Support/SelfReference.php',
+        'Laravel\\SerializableClosure\\UnsignedSerializableClosure' => __DIR__ . '/..' . '/laravel/serializable-closure/src/UnsignedSerializableClosure.php',
         'Location\\Bearing\\BearingEllipsoidal' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Bearing/BearingEllipsoidal.php',
         'Location\\Bearing\\BearingInterface' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Bearing/BearingInterface.php',
         'Location\\Bearing\\BearingSpherical' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Bearing/BearingSpherical.php',
@@ -205,16 +215,6 @@ class ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576
         'Location\\Utility\\Cartesian' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Utility/Cartesian.php',
         'Location\\Utility\\PerpendicularDistance' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Utility/PerpendicularDistance.php',
         'Location\\Utility\\PointToLineDistance' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Utility/PointToLineDistance.php',
-        'Opis\\Closure\\Analyzer' => __DIR__ . '/..' . '/opis/closure/src/Analyzer.php',
-        'Opis\\Closure\\ClosureContext' => __DIR__ . '/..' . '/opis/closure/src/ClosureContext.php',
-        'Opis\\Closure\\ClosureScope' => __DIR__ . '/..' . '/opis/closure/src/ClosureScope.php',
-        'Opis\\Closure\\ClosureStream' => __DIR__ . '/..' . '/opis/closure/src/ClosureStream.php',
-        'Opis\\Closure\\ISecurityProvider' => __DIR__ . '/..' . '/opis/closure/src/ISecurityProvider.php',
-        'Opis\\Closure\\ReflectionClosure' => __DIR__ . '/..' . '/opis/closure/src/ReflectionClosure.php',
-        'Opis\\Closure\\SecurityException' => __DIR__ . '/..' . '/opis/closure/src/SecurityException.php',
-        'Opis\\Closure\\SecurityProvider' => __DIR__ . '/..' . '/opis/closure/src/SecurityProvider.php',
-        'Opis\\Closure\\SelfReference' => __DIR__ . '/..' . '/opis/closure/src/SelfReference.php',
-        'Opis\\Closure\\SerializableClosure' => __DIR__ . '/..' . '/opis/closure/src/SerializableClosure.php',
         'Parsedown' => __DIR__ . '/..' . '/erusev/parsedown/Parsedown.php',
         'PhpDocReader\\AnnotationException' => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader/AnnotationException.php',
         'PhpDocReader\\PhpDocReader' => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader/PhpDocReader.php',
@@ -450,6 +450,8 @@ class ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576
         'onOffice\\WPlugin\\FormPostOwner' => __DIR__ . '/../..' . '/plugin/FormPostOwner.php',
         'onOffice\\WPlugin\\Form\\BulkDeleteRecord' => __DIR__ . '/../..' . '/plugin/Form/BulkDeleteRecord.php',
         'onOffice\\WPlugin\\Form\\CaptchaDataChecker' => __DIR__ . '/../..' . '/plugin/Form/CaptchaDataChecker.php',
+        'onOffice\\WPlugin\\Form\\CaptchaEnterpriseDataChecker' => __DIR__ . '/../..' . '/plugin/Form/CaptchaEnterpriseDataChecker.php',
+        'onOffice\\WPlugin\\Form\\CaptchaEnterpriseHandler' => __DIR__ . '/../..' . '/plugin/Form/CaptchaEnterpriseHandler.php',
         'onOffice\\WPlugin\\Form\\CaptchaHandler' => __DIR__ . '/../..' . '/plugin/Form/CaptchaHandler.php',
         'onOffice\\WPlugin\\Form\\FormAddressCreator' => __DIR__ . '/../..' . '/plugin/Form/FormAddressCreator.php',
         'onOffice\\WPlugin\\Form\\FormBuilder' => __DIR__ . '/../..' . '/plugin/Form/FormBuilder.php',
@@ -545,6 +547,7 @@ class ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576
         'onOffice\\WPlugin\\PDF\\PdfDocumentModelValidator' => __DIR__ . '/../..' . '/plugin/PDF/PdfDocumentModelValidator.php',
         'onOffice\\WPlugin\\PDF\\PdfDownload' => __DIR__ . '/../..' . '/plugin/PDF/PdfDownload.php',
         'onOffice\\WPlugin\\PDF\\PdfDownloadException' => __DIR__ . '/../..' . '/plugin/PDF/PdfDownloadException.php',
+        'onOffice\\WPlugin\\Pagination\\ListPagination' => __DIR__ . '/../..' . '/plugin/Pagination/ListPagination.php',
         'onOffice\\WPlugin\\Record\\AddressIdRequestGuard' => __DIR__ . '/../..' . '/plugin/Record/AddressIdRequestGuard.php',
         'onOffice\\WPlugin\\Record\\BooleanValueToFieldList' => __DIR__ . '/../..' . '/plugin/Record/BooleanValueToFieldList.php',
         'onOffice\\WPlugin\\Record\\EstateIdRequestGuard' => __DIR__ . '/../..' . '/plugin/Record/EstateIdRequestGuard.php',
@@ -626,6 +629,7 @@ class ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576
         'onOffice\\WPlugin\\Types\\LinksTypes' => __DIR__ . '/../..' . '/plugin/Types/LinksTypes.php',
         'onOffice\\WPlugin\\Types\\MapProvider' => __DIR__ . '/../..' . '/plugin/Types/MapProvider.php',
         'onOffice\\WPlugin\\Types\\MovieLinkTypes' => __DIR__ . '/../..' . '/plugin/Types/MovieLinkTypes.php',
+        'onOffice\\WPlugin\\Utility\\FileVersionHelper' => __DIR__ . '/../..' . '/plugin/Utility/FileVersionHelper.php',
         'onOffice\\WPlugin\\Utility\\HTTPHeaders' => __DIR__ . '/../..' . '/plugin/Utility/HTTPHeaders.php',
         'onOffice\\WPlugin\\Utility\\HTTPHeadersGeneric' => __DIR__ . '/../..' . '/plugin/Utility/HTTPHeadersGeneric.php',
         'onOffice\\WPlugin\\Utility\\HtmlIdGenerator' => __DIR__ . '/../..' . '/plugin/Utility/HtmlIdGenerator.php',
@@ -676,10 +680,10 @@ class ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit19a6fe0a91f606276d5f816dbbf8e576::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitf05a841babe182f9b7b2a66131393e02::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitf05a841babe182f9b7b2a66131393e02::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitf05a841babe182f9b7b2a66131393e02::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitf05a841babe182f9b7b2a66131393e02::$classMap;
 
         }, null, ClassLoader::class);
     }

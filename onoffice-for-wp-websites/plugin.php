@@ -25,19 +25,18 @@ Plugin URI: https://wpplugindoc.onoffice.de
 Author: onOffice GmbH
 Author URI: https://en.onoffice.com/
 Description: Your connection to onOffice: This plugin enables you to have quick access to estates and forms – no additional sync with the software is needed. Consult support@onoffice.de for source code.
-Version: 6.5.1
+Version: 6.10.2
 License: AGPL 3+
 License URI: https://www.gnu.org/licenses/agpl-3.0
 Text Domain: onoffice-for-wp-websites
 Domain Path: /languages
 */
-defined( 'ABSPATH' ) or die();
+if ( ! defined( 'ABSPATH' ) ) exit;
 
-const ONOFFICE_PLUGIN_VERSION = '6.5.1';
+const ONOFFICE_PLUGIN_VERSION = '6.10.2';
 define('ONOFFICE_PLUGIN_BASENAME', plugin_basename( __FILE__ ));
 
 require __DIR__ . '/vendor/autoload.php';
-require plugin_dir_path( __FILE__ ) . 'oo-updater.php';
 
 define('ONOFFICE_PLUGIN_DIR', __DIR__);
 
@@ -55,6 +54,7 @@ use onOffice\WPlugin\DataView\DataDetailViewCheckAccessControl;
 use onOffice\WPlugin\DataView\DataDetailViewHandler;
 use onOffice\WPlugin\Field\EstateKindTypeReader;
 use onOffice\WPlugin\Form\CaptchaDataChecker;
+use onOffice\WPlugin\Form\CaptchaEnterpriseDataChecker;
 use onOffice\WPlugin\Form\Preview\FormPreviewApplicantSearch;
 use onOffice\WPlugin\Form\Preview\FormPreviewEstate;
 use onOffice\WPlugin\FormPostHandler;
@@ -156,28 +156,32 @@ add_action('admin_bar_menu', function ( $wp_admin_bar ) {
 }, 500);
 
 add_action('admin_init', function () use ( $pDI ) {
-	if ( strpos($_SERVER["REQUEST_URI"], "action=onoffice-clear-cache") !== false ) {
-		$onofficeSettingsCache = get_option('onoffice-settings-duration-cache');
-		$timestamp = wp_next_scheduled('oo_cache_renew');
-		if ($timestamp) {
-			wp_unschedule_event($timestamp, 'oo_cache_renew');
-		}
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strpos() doesn't execute or display the value, only checks string position.
+    if ( isset($_SERVER["REQUEST_URI"]) && strpos($_SERVER["REQUEST_URI"], "action=onoffice-clear-cache") !== false ) {
+        $onofficeSettingsCache = get_option('onoffice-settings-duration-cache');
+        $timestamp = wp_next_scheduled('oo_cache_renew');
+        if ($timestamp) {
+            wp_unschedule_event($timestamp, 'oo_cache_renew');
+        }
 
-		wp_schedule_event(time(), $onofficeSettingsCache, 'oo_cache_renew');
-		$location = ! empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : admin_url('admin.php?page=onoffice-settings');
-		update_option('onoffice-notice-cache-was-cleared', true);
-		wp_safe_redirect($location);
-		exit();
-	}
+        wp_schedule_event(time(), $onofficeSettingsCache, 'oo_cache_renew');
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_safe_redirect() validates and sanitizes the URL.
+        $location = ! empty($_SERVER['HTTP_REFERER']) ? wp_unslash($_SERVER['HTTP_REFERER']) : admin_url('admin.php?page=onoffice-settings');
+        update_option('onoffice-notice-cache-was-cleared', true);
+        wp_safe_redirect($location);
+        exit();
+    }
 });
 
-if (is_admin() && isset($_GET['post']) && isset($_GET['action']) && $_GET['action'] === 'edit') {
-	$post_id = $_GET['post'];
-	$post_type = get_post_type($post_id);
-	if ($post_type === 'page') {
-		return $pDI;
-	}
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- WordPress core edit action check, no side effects.
+if (is_admin() && isset($_GET['post']) && isset($_GET['action']) && sanitize_key(wp_unslash($_GET['action'])) === 'edit') {
+    $post_id = absint(wp_unslash($_GET['post']));
+    $post_type = get_post_type($post_id);
+    if ($post_type === 'page') {
+        return $pDI;
+    }
 }
+// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 $pDI->get(ScriptLoaderRegistrator::class)->generate();
 
@@ -210,25 +214,23 @@ add_action('init', function() use ($pAdminViewController) {
 }, 11);
 add_action('admin_init', [$pAdminViewController, 'add_actions']);
 add_action('admin_init', [CaptchaDataChecker::class, 'addHook']);
+add_action('admin_init', [CaptchaEnterpriseDataChecker::class, 'addHook']);
 add_action('admin_init', [$pDetailViewPostSaveController, 'getAllPost']);
 add_action('plugins_loaded', function() {
 	$mo_file = ONOFFICE_PLUGIN_DIR . '/languages/onoffice-for-wp-websites-'.get_locale().'.mo';
 	if (file_exists($mo_file)) {
 		load_textdomain('onoffice-for-wp-websites', $mo_file);
-	} else {
-		load_plugin_textdomain('onoffice-for-wp-websites', false, basename(ONOFFICE_PLUGIN_DIR) . '/languages');
 	}
-	// Check 'onoffice-personalized' Folder exists
+	// WordPress automatically loads translations for 'onoffice-for-wp-websites' domain since WP 4.6+
+
+	// Load custom 'onoffice' domain translations from personalized/theme folders
 	$onofficePersonalizedFolderLanguages = plugin_dir_path(__DIR__) . 'onoffice-personalized/languages';
-	$onofficePersonalizedFolder = plugin_dir_path(__DIR__) . 'onoffice-personalized';
 	$onofficeThemeFolderLanguages = get_stylesheet_directory() . '/onoffice-theme/languages';
 
 	if (is_dir($onofficeThemeFolderLanguages)) {
 		load_textdomain('onoffice', $onofficeThemeFolderLanguages . '/onoffice-'.get_locale().'.mo');
 	} elseif (is_dir($onofficePersonalizedFolderLanguages)) {
-		load_plugin_textdomain('onoffice', false, basename($onofficePersonalizedFolder) . '/languages');
-	} else {
-		load_plugin_textdomain('onoffice', false, basename(ONOFFICE_PLUGIN_DIR) . '/languages');
+		load_textdomain('onoffice', $onofficePersonalizedFolderLanguages . '/onoffice-'.get_locale().'.mo');
 	}
 });
 
@@ -327,7 +329,7 @@ if (get_option('onoffice-settings-title-and-description') === '1')
 
         } catch (\Throwable $e) {
             // Fail safe: log error and return original title parts.
-            error_log('onoffice document_title_parts error: '.$e->getMessage());
+            error_log('onoffice document_title_parts error: '.$e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Fail-safe error logging for title generation.
             return $title;
         }
     }, 20, 1);
@@ -389,19 +391,19 @@ function custom_cron_schedules($schedules) {
 	if(!isset($schedules['ten_minutes'])) {
 		$schedules['ten_minutes'] = array(
 			'interval' => 60 * 10,
-			'display' => __('10 minutes')
+			'display' => __('10 minutes', 'onoffice-for-wp-websites')
 		);
 	}
 	if(!isset($schedules['thirty_minutes'])) {
 		$schedules['thirty_minutes'] = array(
 			'interval' => 60 * 30,
-			'display' => __('30 minutes')
+			'display' => __('30 minutes', 'onoffice-for-wp-websites')
 		);
 	}
 	if(!isset($schedules['six_hours'])) {
 		$schedules['six_hours'] = array(
 			'interval' => 60 * 60 * 6,
-			'display'  => __('6 hours')
+			'display'  => __('6 hours', 'onoffice-for-wp-websites')
 		);
 	}
 
@@ -554,8 +556,23 @@ function update_status_close_action_button_option()
 
 function delete_google_recaptcha_keys()
 {
+	if (!check_ajax_referer('delete_google_recaptcha_keys', 'nonce', false)) {
+        wp_send_json_error('Invalid nonce', 403);
+    }
     update_option('onoffice-settings-captcha-sitekey', '');
     update_option('onoffice-settings-captcha-secretkey', '');
+    echo true;
+    wp_die();
+}
+
+function delete_google_recaptcha_enterprise_keys()
+{
+	if (!check_ajax_referer('delete_google_recaptcha_enterprise_keys', 'nonce', false)) {
+        wp_send_json_error('Invalid nonce', 403);
+    }
+    update_option('onoffice-settings-captcha-enterprise-projectid', '');
+    update_option('onoffice-settings-captcha-enterprise-sitekey', '');
+    update_option('onoffice-settings-captcha-enterprise-apikey', '');
     echo true;
     wp_die();
 }
@@ -563,6 +580,7 @@ function delete_google_recaptcha_keys()
 add_action('wp_ajax_update_active_plugin_seo_option', 'update_status_close_action_button_option');
 add_action('wp_ajax_update_duplicate_check_warning_option', 'update_duplicate_check_warning_option');
 add_action('wp_ajax_delete_google_recaptcha_keys', 'delete_google_recaptcha_keys');
+add_action('wp_ajax_delete_google_recaptcha_enterprise_keys', 'delete_google_recaptcha_enterprise_keys');
 
 add_action('wp', function () {
 	if (!get_option('add-detail-posts-to-rewrite-rules')) {
@@ -572,12 +590,13 @@ add_action('wp', function () {
 });
 
 add_action('admin_notices', function () {
-	if (get_option('onoffice-notice-cache-was-cleared') == true) {
-		$class = 'notice notice-success is-dismissible';
-		$message = esc_html__('Cache is being cleared in the background. This may take a few minutes.', 'onoffice-for-wp-websites');
-		printf('<div class="%1$s"><p>%2$s</p></div>', esc_attr($class), $message);
-		update_option('onoffice-notice-cache-was-cleared', false);
-	}
+    if (get_option('onoffice-notice-cache-was-cleared') == true) {
+        $class = 'notice notice-success is-dismissible';
+        $message = __('The cache was cleaned.', 'onoffice-for-wp-websites');
+
+        printf('<div class="%1$s"><p>%2$s</p></div>', esc_attr($class), esc_html($message));
+        update_option('onoffice-notice-cache-was-cleared', false);
+    }
 });
 
 add_filter('script_loader_tag', 'filter_script_loader_tag', 10, 2);

@@ -21,6 +21,8 @@
 
 namespace onOffice\WPlugin;
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 use DI\ContainerBuilder;
 use DI\DependencyException;
 use DI\NotFoundException;
@@ -802,9 +804,13 @@ class EstateList
 		if ($this->getShowTotalCostsCalculator()) {
 			$externalCommission = $this->getExternalCommission($recordRaw['aussen_courtage'] ?? '');
 			$propertyTransferTax = $this->_pDataView->getPropertyTransferTax();
-			if (!empty((float) $recordRaw['kaufpreis']) && !empty($recordRaw['bundesland']) && $externalCommission !== null) {
+		
+			if (!empty((float) $recordRaw['kaufpreis']) && !empty($recordRaw['bundesland'])) {
 				$costsCalculator = $this->_pEnvironment->getContainer()->get(CostsCalculator::class);
+		
+				
 				$this->_totalCostsData = $costsCalculator->getTotalCosts($recordRaw, $propertyTransferTax, $externalCommission);
+				
 			}
 		}
 
@@ -994,7 +1000,7 @@ class EstateList
 			$url      = get_page_link($pageId);
 			$fullLink = $this->_pLanguageSwitcher->createEstateDetailLink($url, $estate, $title);
 
-			$fullLinkElements = parse_url($fullLink);
+			$fullLinkElements = wp_parse_url($fullLink);
 			if (empty($fullLinkElements['query'])) {
 				$fullLink .= '/';
 			}
@@ -1344,8 +1350,10 @@ class EstateList
 		add_action('wp_head', function () use ($metaData, $keySocial) {
 			foreach ($metaData as $metaKey => $metaValue) {
 				if ($keySocial === GenerateMetaDataSocial::TWITTER_KEY) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- TWITTER_KEY is a safe class constant
 					echo '<meta name="' . GenerateMetaDataSocial::TWITTER_KEY . ':' . esc_html($metaKey) . '" content="' . esc_attr($metaValue) . '">';
 				} elseif ($keySocial === GenerateMetaDataSocial::OPEN_GRAPH_KEY) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- OPEN_GRAPH_KEY is a safe class constant
 					echo '<meta property="' . GenerateMetaDataSocial::OPEN_GRAPH_KEY . ':' . esc_html($metaKey) . '" content="' . esc_attr($metaValue) . '">';
 				}
 			}
