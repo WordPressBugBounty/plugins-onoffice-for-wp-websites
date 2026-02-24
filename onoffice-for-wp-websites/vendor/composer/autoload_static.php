@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
+class ComposerStaticInitfeafb76187321681e429074198a70005
 {
     public static $files = array (
         'b33e3d135e5d9e47d845c576147bda89' => __DIR__ . '/..' . '/php-di/php-di/src/functions.php',
@@ -19,7 +19,6 @@ class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
         'P' =>
         array (
             'Psr\\Container\\' => 14,
-            'PhpDocReader\\' => 13,
         ),
         'L' =>
         array (
@@ -48,10 +47,6 @@ class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
         'Psr\\Container\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
-        ),
-        'PhpDocReader\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader',
         ),
         'Location\\' =>
         array (
@@ -83,8 +78,8 @@ class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'DI\\Annotation\\Inject' => __DIR__ . '/..' . '/php-di/php-di/src/Annotation/Inject.php',
-        'DI\\Annotation\\Injectable' => __DIR__ . '/..' . '/php-di/php-di/src/Annotation/Injectable.php',
+        'DI\\Attribute\\Inject' => __DIR__ . '/..' . '/php-di/php-di/src/Attribute/Inject.php',
+        'DI\\Attribute\\Injectable' => __DIR__ . '/..' . '/php-di/php-di/src/Attribute/Injectable.php',
         'DI\\CompiledContainer' => __DIR__ . '/..' . '/php-di/php-di/src/CompiledContainer.php',
         'DI\\Compiler\\Compiler' => __DIR__ . '/..' . '/php-di/php-di/src/Compiler/Compiler.php',
         'DI\\Compiler\\ObjectCreationCompiler' => __DIR__ . '/..' . '/php-di/php-di/src/Compiler/ObjectCreationCompiler.php',
@@ -98,7 +93,7 @@ class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
         'DI\\Definition\\Definition' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Definition.php',
         'DI\\Definition\\Dumper\\ObjectDefinitionDumper' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Dumper/ObjectDefinitionDumper.php',
         'DI\\Definition\\EnvironmentVariableDefinition' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/EnvironmentVariableDefinition.php',
-        'DI\\Definition\\Exception\\InvalidAnnotation' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Exception/InvalidAnnotation.php',
+        'DI\\Definition\\Exception\\InvalidAttribute' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Exception/InvalidAttribute.php',
         'DI\\Definition\\Exception\\InvalidDefinition' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Exception/InvalidDefinition.php',
         'DI\\Definition\\ExtendsPreviousDefinition' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/ExtendsPreviousDefinition.php',
         'DI\\Definition\\FactoryDefinition' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/FactoryDefinition.php',
@@ -121,7 +116,7 @@ class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
         'DI\\Definition\\Resolver\\ParameterResolver' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Resolver/ParameterResolver.php',
         'DI\\Definition\\Resolver\\ResolverDispatcher' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Resolver/ResolverDispatcher.php',
         'DI\\Definition\\SelfResolvingDefinition' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/SelfResolvingDefinition.php',
-        'DI\\Definition\\Source\\AnnotationBasedAutowiring' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Source/AnnotationBasedAutowiring.php',
+        'DI\\Definition\\Source\\AttributeBasedAutowiring' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Source/AttributeBasedAutowiring.php',
         'DI\\Definition\\Source\\Autowiring' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Source/Autowiring.php',
         'DI\\Definition\\Source\\DefinitionArray' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Source/DefinitionArray.php',
         'DI\\Definition\\Source\\DefinitionFile' => __DIR__ . '/..' . '/php-di/php-di/src/Definition/Source/DefinitionFile.php',
@@ -140,7 +135,9 @@ class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
         'DI\\Invoker\\DefinitionParameterResolver' => __DIR__ . '/..' . '/php-di/php-di/src/Invoker/DefinitionParameterResolver.php',
         'DI\\Invoker\\FactoryParameterResolver' => __DIR__ . '/..' . '/php-di/php-di/src/Invoker/FactoryParameterResolver.php',
         'DI\\NotFoundException' => __DIR__ . '/..' . '/php-di/php-di/src/NotFoundException.php',
+        'DI\\Proxy\\NativeProxyFactory' => __DIR__ . '/..' . '/php-di/php-di/src/Proxy/NativeProxyFactory.php',
         'DI\\Proxy\\ProxyFactory' => __DIR__ . '/..' . '/php-di/php-di/src/Proxy/ProxyFactory.php',
+        'DI\\Proxy\\ProxyFactoryInterface' => __DIR__ . '/..' . '/php-di/php-di/src/Proxy/ProxyFactoryInterface.php',
         'Invoker\\CallableResolver' => __DIR__ . '/..' . '/php-di/invoker/src/CallableResolver.php',
         'Invoker\\Exception\\InvocationException' => __DIR__ . '/..' . '/php-di/invoker/src/Exception/InvocationException.php',
         'Invoker\\Exception\\NotCallableException' => __DIR__ . '/..' . '/php-di/invoker/src/Exception/NotCallableException.php',
@@ -216,10 +213,6 @@ class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
         'Location\\Utility\\PerpendicularDistance' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Utility/PerpendicularDistance.php',
         'Location\\Utility\\PointToLineDistance' => __DIR__ . '/..' . '/mjaschen/phpgeo/src/Utility/PointToLineDistance.php',
         'Parsedown' => __DIR__ . '/..' . '/erusev/parsedown/Parsedown.php',
-        'PhpDocReader\\AnnotationException' => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader/AnnotationException.php',
-        'PhpDocReader\\PhpDocReader' => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader/PhpDocReader.php',
-        'PhpDocReader\\PhpParser\\TokenParser' => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader/PhpParser/TokenParser.php',
-        'PhpDocReader\\PhpParser\\UseStatementParser' => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader/PhpParser/UseStatementParser.php',
         'Psr\\Container\\ContainerExceptionInterface' => __DIR__ . '/..' . '/psr/container/src/ContainerExceptionInterface.php',
         'Psr\\Container\\ContainerInterface' => __DIR__ . '/..' . '/psr/container/src/ContainerInterface.php',
         'Psr\\Container\\NotFoundExceptionInterface' => __DIR__ . '/..' . '/psr/container/src/NotFoundExceptionInterface.php',
@@ -680,10 +673,10 @@ class ComposerStaticInitf05a841babe182f9b7b2a66131393e02
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitf05a841babe182f9b7b2a66131393e02::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitf05a841babe182f9b7b2a66131393e02::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitf05a841babe182f9b7b2a66131393e02::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitf05a841babe182f9b7b2a66131393e02::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitfeafb76187321681e429074198a70005::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitfeafb76187321681e429074198a70005::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitfeafb76187321681e429074198a70005::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitfeafb76187321681e429074198a70005::$classMap;
 
         }, null, ClassLoader::class);
     }

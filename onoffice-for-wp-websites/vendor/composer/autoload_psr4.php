@@ -9,7 +9,6 @@ return array(
     'onOffice\\WPlugin\\' => array($baseDir . '/plugin'),
     'onOffice\\SDK\\' => array($baseDir . '/SDK/src'),
     'Psr\\Container\\' => array($vendorDir . '/psr/container/src'),
-    'PhpDocReader\\' => array($vendorDir . '/php-di/phpdoc-reader/src/PhpDocReader'),
     'Location\\' => array($vendorDir . '/mjaschen/phpgeo/src'),
     'Laravel\\SerializableClosure\\' => array($vendorDir . '/laravel/serializable-closure/src'),
     'Invoker\\' => array($vendorDir . '/php-di/invoker/src'),

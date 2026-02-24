@@ -22,7 +22,7 @@ export type TomSettings = {
 	highlight				: boolean,
 	openOnFocus				: boolean,
 	shouldOpen				: boolean,
-	maxOptions				: number,
+	maxOptions				: null|number,
 	maxItems				: null|number,
 	hideSelected			: boolean,
 	duplicates				: boolean,
@@ -31,6 +31,7 @@ export type TomSettings = {
 	preload					: boolean|string,
 	allowEmptyOption		: boolean,
 	closeAfterSelect		: boolean,
+	clearAfterSelect		: boolean,
 	refreshThrottle			: number,
 
 	loadThrottle			: number,
