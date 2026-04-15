@@ -564,6 +564,7 @@ class ComposerStaticInitfeafb76187321681e429074198a70005
         'onOffice\\WPlugin\\Record\\RecordManagerUpdateListViewAddress' => __DIR__ . '/../..' . '/plugin/Record/RecordManagerUpdateListViewAddress.php',
         'onOffice\\WPlugin\\Record\\RecordManagerUpdateListViewEstate' => __DIR__ . '/../..' . '/plugin/Record/RecordManagerUpdateListViewEstate.php',
         'onOffice\\WPlugin\\Record\\RecordStructure' => __DIR__ . '/../..' . '/plugin/Record/RecordStructure.php',
+        'onOffice\\WPlugin\\Record\\StringValueToFieldList' => __DIR__ . '/../..' . '/plugin/Record/StringValueToFieldList.php',
         'onOffice\\WPlugin\\Region\\Region' => __DIR__ . '/../..' . '/plugin/Region/Region.php',
         'onOffice\\WPlugin\\Region\\RegionController' => __DIR__ . '/../..' . '/plugin/Region/RegionController.php',
         'onOffice\\WPlugin\\Region\\RegionFilter' => __DIR__ . '/../..' . '/plugin/Region/RegionFilter.php',
@@ -668,6 +669,7 @@ class ComposerStaticInitfeafb76187321681e429074198a70005
         'onOffice\\WPlugin\\WP\\WPScriptStyleDefault' => __DIR__ . '/../..' . '/plugin/WP/WPScriptStyleDefault.php',
         'onOffice\\WPlugin\\WP\\WPScriptStyleTest' => __DIR__ . '/../..' . '/plugin/WP/WPScriptStyleTest.php',
         'onOffice\\WPlugin\\WP\\WPWrapper' => __DIR__ . '/../..' . '/plugin/WP/WPWrapper.php',
+        'onOffice\\WPlugin\\WP\\WpdbReadCacheProxy' => __DIR__ . '/../..' . '/plugin/WP/WpdbReadCacheProxy.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

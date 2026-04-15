@@ -493,6 +493,7 @@ return array(
     'onOffice\\WPlugin\\Record\\RecordManagerUpdateListViewAddress' => $baseDir . '/plugin/Record/RecordManagerUpdateListViewAddress.php',
     'onOffice\\WPlugin\\Record\\RecordManagerUpdateListViewEstate' => $baseDir . '/plugin/Record/RecordManagerUpdateListViewEstate.php',
     'onOffice\\WPlugin\\Record\\RecordStructure' => $baseDir . '/plugin/Record/RecordStructure.php',
+    'onOffice\\WPlugin\\Record\\StringValueToFieldList' => $baseDir . '/plugin/Record/StringValueToFieldList.php',
     'onOffice\\WPlugin\\Region\\Region' => $baseDir . '/plugin/Region/Region.php',
     'onOffice\\WPlugin\\Region\\RegionController' => $baseDir . '/plugin/Region/RegionController.php',
     'onOffice\\WPlugin\\Region\\RegionFilter' => $baseDir . '/plugin/Region/RegionFilter.php',
@@ -597,4 +598,5 @@ return array(
     'onOffice\\WPlugin\\WP\\WPScriptStyleDefault' => $baseDir . '/plugin/WP/WPScriptStyleDefault.php',
     'onOffice\\WPlugin\\WP\\WPScriptStyleTest' => $baseDir . '/plugin/WP/WPScriptStyleTest.php',
     'onOffice\\WPlugin\\WP\\WPWrapper' => $baseDir . '/plugin/WP/WPWrapper.php',
+    'onOffice\\WPlugin\\WP\\WpdbReadCacheProxy' => $baseDir . '/plugin/WP/WpdbReadCacheProxy.php',
 );
