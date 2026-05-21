@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitfeafb76187321681e429074198a70005
+class ComposerStaticInitd786026103f055a510d74911a90b06d5
 {
     public static $files = array (
         'b33e3d135e5d9e47d845c576147bda89' => __DIR__ . '/..' . '/php-di/php-di/src/functions.php',
@@ -32,6 +32,10 @@ class ComposerStaticInitfeafb76187321681e429074198a70005
         'D' =>
         array (
             'DI\\' => 3,
+        ),
+        'A' =>
+        array (
+            'AltchaOrg\\Altcha\\' => 17,
         ),
     );
 
@@ -64,6 +68,10 @@ class ComposerStaticInitfeafb76187321681e429074198a70005
         array (
             0 => __DIR__ . '/..' . '/php-di/php-di/src',
         ),
+        'AltchaOrg\\Altcha\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/altcha-org/altcha/src',
+        ),
     );
 
     public static $prefixesPsr0 = array (
@@ -77,6 +85,41 @@ class ComposerStaticInitfeafb76187321681e429074198a70005
     );
 
     public static $classMap = array (
+        'AltchaOrg\\Altcha\\Algorithm\\Argon2id' => __DIR__ . '/..' . '/altcha-org/altcha/src/Algorithm/Argon2id.php',
+        'AltchaOrg\\Altcha\\Algorithm\\DeriveKeyInterface' => __DIR__ . '/..' . '/altcha-org/altcha/src/Algorithm/DeriveKeyInterface.php',
+        'AltchaOrg\\Altcha\\Algorithm\\DeriveKeyResult' => __DIR__ . '/..' . '/altcha-org/altcha/src/Algorithm/DeriveKeyResult.php',
+        'AltchaOrg\\Altcha\\Algorithm\\Pbkdf2' => __DIR__ . '/..' . '/altcha-org/altcha/src/Algorithm/Pbkdf2.php',
+        'AltchaOrg\\Altcha\\Algorithm\\Scrypt' => __DIR__ . '/..' . '/altcha-org/altcha/src/Algorithm/Scrypt.php',
+        'AltchaOrg\\Altcha\\Algorithm\\Sha' => __DIR__ . '/..' . '/altcha-org/altcha/src/Algorithm/Sha.php',
+        'AltchaOrg\\Altcha\\Algorithm\\ShaAlgorithm' => __DIR__ . '/..' . '/altcha-org/altcha/src/Algorithm/ShaAlgorithm.php',
+        'AltchaOrg\\Altcha\\Altcha' => __DIR__ . '/..' . '/altcha-org/altcha/src/Altcha.php',
+        'AltchaOrg\\Altcha\\Challenge' => __DIR__ . '/..' . '/altcha-org/altcha/src/Challenge.php',
+        'AltchaOrg\\Altcha\\ChallengeParameters' => __DIR__ . '/..' . '/altcha-org/altcha/src/ChallengeParameters.php',
+        'AltchaOrg\\Altcha\\CreateChallengeOptions' => __DIR__ . '/..' . '/altcha-org/altcha/src/CreateChallengeOptions.php',
+        'AltchaOrg\\Altcha\\HmacAlgorithm' => __DIR__ . '/..' . '/altcha-org/altcha/src/HmacAlgorithm.php',
+        'AltchaOrg\\Altcha\\Obfuscator' => __DIR__ . '/..' . '/altcha-org/altcha/src/Obfuscator.php',
+        'AltchaOrg\\Altcha\\Payload' => __DIR__ . '/..' . '/altcha-org/altcha/src/Payload.php',
+        'AltchaOrg\\Altcha\\ServerSignature' => __DIR__ . '/..' . '/altcha-org/altcha/src/ServerSignature.php',
+        'AltchaOrg\\Altcha\\ServerSignatureVerification' => __DIR__ . '/..' . '/altcha-org/altcha/src/ServerSignatureVerification.php',
+        'AltchaOrg\\Altcha\\ServerSignatureVerificationData' => __DIR__ . '/..' . '/altcha-org/altcha/src/ServerSignatureVerificationData.php',
+        'AltchaOrg\\Altcha\\Solution' => __DIR__ . '/..' . '/altcha-org/altcha/src/Solution.php',
+        'AltchaOrg\\Altcha\\SolveChallengeOptions' => __DIR__ . '/..' . '/altcha-org/altcha/src/SolveChallengeOptions.php',
+        'AltchaOrg\\Altcha\\V1\\Altcha' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/Altcha.php',
+        'AltchaOrg\\Altcha\\V1\\BaseChallengeOptions' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/BaseChallengeOptions.php',
+        'AltchaOrg\\Altcha\\V1\\Challenge' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/Challenge.php',
+        'AltchaOrg\\Altcha\\V1\\ChallengeOptions' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/ChallengeOptions.php',
+        'AltchaOrg\\Altcha\\V1\\CheckChallengeOptions' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/CheckChallengeOptions.php',
+        'AltchaOrg\\Altcha\\V1\\Hasher\\Algorithm' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/Hasher/Algorithm.php',
+        'AltchaOrg\\Altcha\\V1\\Hasher\\Hasher' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/Hasher/Hasher.php',
+        'AltchaOrg\\Altcha\\V1\\Hasher\\HasherInterface' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/Hasher/HasherInterface.php',
+        'AltchaOrg\\Altcha\\V1\\Obfuscator' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/Obfuscator.php',
+        'AltchaOrg\\Altcha\\V1\\Payload' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/Payload.php',
+        'AltchaOrg\\Altcha\\V1\\ServerSignaturePayload' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/ServerSignaturePayload.php',
+        'AltchaOrg\\Altcha\\V1\\ServerSignatureVerification' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/ServerSignatureVerification.php',
+        'AltchaOrg\\Altcha\\V1\\ServerSignatureVerificationData' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/ServerSignatureVerificationData.php',
+        'AltchaOrg\\Altcha\\V1\\Solution' => __DIR__ . '/..' . '/altcha-org/altcha/src/V1/Solution.php',
+        'AltchaOrg\\Altcha\\VerifySolutionOptions' => __DIR__ . '/..' . '/altcha-org/altcha/src/VerifySolutionOptions.php',
+        'AltchaOrg\\Altcha\\VerifySolutionResult' => __DIR__ . '/..' . '/altcha-org/altcha/src/VerifySolutionResult.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'DI\\Attribute\\Inject' => __DIR__ . '/..' . '/php-di/php-di/src/Attribute/Inject.php',
         'DI\\Attribute\\Injectable' => __DIR__ . '/..' . '/php-di/php-di/src/Attribute/Injectable.php',
@@ -157,7 +200,6 @@ class ComposerStaticInitfeafb76187321681e429074198a70005
         'Laravel\\SerializableClosure\\Contracts\\Signer' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Contracts/Signer.php',
         'Laravel\\SerializableClosure\\Exceptions\\InvalidSignatureException' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Exceptions/InvalidSignatureException.php',
         'Laravel\\SerializableClosure\\Exceptions\\MissingSecretKeyException' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Exceptions/MissingSecretKeyException.php',
-        'Laravel\\SerializableClosure\\Exceptions\\PhpVersionNotSupportedException' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Exceptions/PhpVersionNotSupportedException.php',
         'Laravel\\SerializableClosure\\SerializableClosure' => __DIR__ . '/..' . '/laravel/serializable-closure/src/SerializableClosure.php',
         'Laravel\\SerializableClosure\\Serializers\\Native' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Serializers/Native.php',
         'Laravel\\SerializableClosure\\Serializers\\Signed' => __DIR__ . '/..' . '/laravel/serializable-closure/src/Serializers/Signed.php',
@@ -441,6 +483,7 @@ class ComposerStaticInitfeafb76187321681e429074198a70005
         'onOffice\\WPlugin\\FormPostHandler' => __DIR__ . '/../..' . '/plugin/FormPostHandler.php',
         'onOffice\\WPlugin\\FormPostInterest' => __DIR__ . '/../..' . '/plugin/FormPostInterest.php',
         'onOffice\\WPlugin\\FormPostOwner' => __DIR__ . '/../..' . '/plugin/FormPostOwner.php',
+        'onOffice\\WPlugin\\Form\\AltchaHandler' => __DIR__ . '/../..' . '/plugin/Form/AltchaHandler.php',
         'onOffice\\WPlugin\\Form\\BulkDeleteRecord' => __DIR__ . '/../..' . '/plugin/Form/BulkDeleteRecord.php',
         'onOffice\\WPlugin\\Form\\CaptchaDataChecker' => __DIR__ . '/../..' . '/plugin/Form/CaptchaDataChecker.php',
         'onOffice\\WPlugin\\Form\\CaptchaEnterpriseDataChecker' => __DIR__ . '/../..' . '/plugin/Form/CaptchaEnterpriseDataChecker.php',
@@ -633,6 +676,7 @@ class ComposerStaticInitfeafb76187321681e429074198a70005
         'onOffice\\WPlugin\\Utility\\Redirector' => __DIR__ . '/../..' . '/plugin/Utility/Redirector.php',
         'onOffice\\WPlugin\\Utility\\SymmetricEncryption' => __DIR__ . '/../..' . '/plugin/Utility/SymmetricEncryption.php',
         'onOffice\\WPlugin\\Utility\\SymmetricEncryptionDefault' => __DIR__ . '/../..' . '/plugin/Utility/SymmetricEncryptionDefault.php',
+        'onOffice\\WPlugin\\Utility\\UrlHelper' => __DIR__ . '/../..' . '/plugin/Utility/UrlHelper.php',
         'onOffice\\WPlugin\\Utility\\__String' => __DIR__ . '/../..' . '/plugin/Utility/__String.php',
         'onOffice\\WPlugin\\ViewFieldModifier\\AddressViewFieldModifierTypeDefault' => __DIR__ . '/../..' . '/plugin/ViewFieldModifier/AddressViewFieldModifierTypeDefault.php',
         'onOffice\\WPlugin\\ViewFieldModifier\\AddressViewFieldModifierTypeMap' => __DIR__ . '/../..' . '/plugin/ViewFieldModifier/AddressViewFieldModifierTypeMap.php',
@@ -675,10 +719,10 @@ class ComposerStaticInitfeafb76187321681e429074198a70005
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitfeafb76187321681e429074198a70005::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitfeafb76187321681e429074198a70005::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitfeafb76187321681e429074198a70005::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitfeafb76187321681e429074198a70005::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitd786026103f055a510d74911a90b06d5::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitd786026103f055a510d74911a90b06d5::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitd786026103f055a510d74911a90b06d5::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitd786026103f055a510d74911a90b06d5::$classMap;
 
         }, null, ClassLoader::class);
     }

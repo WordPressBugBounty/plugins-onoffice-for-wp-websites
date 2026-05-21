@@ -13,4 +13,5 @@ return array(
     'Laravel\\SerializableClosure\\' => array($vendorDir . '/laravel/serializable-closure/src'),
     'Invoker\\' => array($vendorDir . '/php-di/invoker/src'),
     'DI\\' => array($vendorDir . '/php-di/php-di/src'),
+    'AltchaOrg\\Altcha\\' => array($vendorDir . '/altcha-org/altcha/src'),
 );

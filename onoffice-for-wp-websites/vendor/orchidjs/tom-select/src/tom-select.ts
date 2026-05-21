@@ -1377,7 +1377,7 @@ export default class TomSelect extends MicroPlugin(MicroEvent){
 		if( self.settings.hideSelected ){
 			result.items = result.items.filter((item) => {
 				let hashed = hash_key(item.id);
-				return !(hashed && self.items.indexOf(hashed) !== -1 );
+				return !(hashed !== null && self.items.indexOf(hashed) !== -1 );
 			});
 		}
 
@@ -1472,7 +1472,14 @@ export default class TomSelect extends MicroPlugin(MicroEvent){
 
 				let order = option.$order;
 				let self_optgroup = self.optgroups[optgroup];
-				if( self_optgroup === undefined ){
+				if (self_optgroup === undefined && typeof self.settings.optionGroupRegister === 'function') {
+	          		var regGroup;
+					if (regGroup = self.settings.optionGroupRegister.apply(self, [optgroup])) {
+						self.registerOptionGroup(regGroup);
+					}
+	        	}
+				self_optgroup = self.optgroups[optgroup];
+				if( self_optgroup === undefined ){					
 					optgroup = '';
 				}else{
 					order = self_optgroup.$order;
@@ -1999,6 +2006,11 @@ export default class TomSelect extends MicroPlugin(MicroEvent){
 						self.setActiveOption(next);
 					}
 				}
+				
+				//remove input value when enabled
+				if(self.settings.clearAfterSelect) {
+					self.setTextboxValue();
+				}
 
 				// refreshOptions after setActiveOption(),
 				// otherwise setActiveOption() will be called by refreshOptions() with the wrong value
@@ -2011,11 +2023,6 @@ export default class TomSelect extends MicroPlugin(MicroEvent){
 					self.close();
 				} else if (!self.isPending) {
 					self.positionDropdown();
-				}
-				
-				//remove input value when enabled
-				if(self.settings.clearAfterSelect) {
-					self.setTextboxValue();
 				}
 
 				self.trigger('item_add', hashed, item);
