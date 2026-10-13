@@ -21,8 +21,7 @@
 
 namespace onOffice\WPlugin\Gui;
 
-use DI\ContainerBuilder;
-use onOffice\WPlugin\Controller\InputVariableReaderFormatter;
+use onOffice\WPlugin\Vendor\DI\ContainerBuilder;
 use onOffice\WPlugin\Favorites;
 use onOffice\WPlugin\Model\FormModel;
 use onOffice\WPlugin\Model\InputModelOption;
@@ -40,7 +39,7 @@ use onOffice\WPlugin\Utility\SymmetricEncryption;
 use onOffice\WPlugin\WP\WPPluginChecker;
 use function settings_fields;
 use function submit_button;
-use Parsedown;
+use onOffice_WPlugin_Vendor_Parsedown as Parsedown;
 /**
  *
  */
@@ -79,7 +78,6 @@ class AdminPageApiSettings
 		$this->addFormModelFavorites($pageSlug);
         $this->addFormModelDetailView($pageSlug);
 		$this->addFormModelPagination($pageSlug);
-		$this->addFormModelSeparatorFormatSettings($pageSlug);
 		$this->addFormModelGoogleBotSettings();
 		$this->addFormModelSocialMetaData();
     }
@@ -739,31 +737,5 @@ class AdminPageApiSettings
 		$this->addFormModel($pFormModel);
 	}
 
-	/**
-	 * @param string $pageSlug
-	 */
-	private function addFormModelSeparatorFormatSettings(string $pageSlug)
-	{
-		$labelSeparatorFormatSettings = __('Separator Format Settings', 'onoffice-for-wp-websites');
-		$labelSeparatorCharacterFormat = __('Thousand Separator Format', 'onoffice-for-wp-websites');
 
-		$pInputModelSeparatorCharacterFormat = new InputModelOption('onoffice-settings', 'thousand-separator',
-			$labelSeparatorCharacterFormat, InputModelOption::SETTING_TYPE_STRING);
-		$pInputModelSeparatorCharacterFormat->setHtmlType(InputModelOption::HTML_TYPE_SELECT);
-		$selectedThousandValue = get_option($pInputModelSeparatorCharacterFormat->getIdentifier(), '.');
-		$pInputModelSeparatorCharacterFormat->setValue($selectedThousandValue);
-		$pInputModelSeparatorCharacterFormat->setValuesAvailable([
-			'' => __('Please choose', 'onoffice-for-wp-websites'),
-			InputVariableReaderFormatter::DOT_THOUSAND_SEPARATOR => __('Dot (ex: 123.456.789)', 'onoffice-for-wp-websites'),
-			InputVariableReaderFormatter::COMMA_THOUSAND_SEPARATOR => __('Comma (ex: 123,456,789)', 'onoffice-for-wp-websites'),
-		]);
-
-		$pFormModel = new FormModel();
-		$pFormModel->addInputModel($pInputModelSeparatorCharacterFormat);
-		$pFormModel->setGroupSlug('onoffice-thousand-separator');
-		$pFormModel->setPageSlug($pageSlug);
-		$pFormModel->setLabel($labelSeparatorFormatSettings);
-	
-		$this->addFormModel($pFormModel);
-	}
 }

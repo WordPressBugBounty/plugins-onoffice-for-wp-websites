@@ -23,8 +23,8 @@ namespace onOffice\WPlugin\Gui;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 use Exception;
 use onOffice\SDK\onOfficeSDK;
 use onOffice\WPlugin\Controller\Exception\UnknownModuleException;
@@ -224,8 +224,11 @@ class AdminPageSimilarEstates
 		$fieldsEstate = $pFieldsCollectionConverter->convert($pFieldsCollection, onOfficeSDK::MODULE_ESTATE);
 
 		foreach (array_keys($fieldsEstate) as $category) {
-			$pFormFieldsConfig = $this->getFormModelByGroupSlug(onOfficeSDK::MODULE_ESTATE . $category);
-			$this->createMetaBoxByForm($pFormFieldsConfig, 'advanced');
+            $pFormFieldsConfig = $this->getFormModelByGroupSlug(onOfficeSDK::MODULE_ESTATE . $category);
+
+            if ($pFormFieldsConfig !== null) {
+                $this->createMetaBoxByForm($pFormFieldsConfig, 'advanced');
+            }
 		}
 	}
 

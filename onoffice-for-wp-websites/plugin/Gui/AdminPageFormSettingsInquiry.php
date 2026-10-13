@@ -21,8 +21,8 @@
 
 namespace onOffice\WPlugin\Gui;
 
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 use onOffice\WPlugin\Record\RecordManager;
 use function __;
 
@@ -53,7 +53,8 @@ class AdminPageFormSettingsInquiry
 		$table = RecordManager::TABLENAME_FORMS;
 		$resultName = isset($row[$table]['name']) && !empty(trim($row[$table]['name']));
 		$resultRecipient = ($row[$table]['default_recipient'] == 0 && isset($row[$table]['recipient']) && $row[$table]['recipient'] != null)
-			|| $row[$table]['default_recipient'] == 1;
+			|| $row[$table]['default_recipient'] == 1
+			|| ($row[$table]['use_broker_recipient'] ?? 0) == 1;
 
 		$this->_hasEmailError = !$resultRecipient;
 

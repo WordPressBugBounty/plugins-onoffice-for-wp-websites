@@ -21,8 +21,8 @@
 
 namespace onOffice\WPlugin;
 
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 use onOffice\SDK\onOfficeSDK;
 use onOffice\WPlugin\API\APIClientActionGeneric;
 use onOffice\WPlugin\DataFormConfiguration\DataFormConfiguration;
@@ -31,6 +31,7 @@ use onOffice\WPlugin\Field\Collection\FieldsCollectionBuilderShort;
 use onOffice\WPlugin\Field\Collection\FieldsCollectionConfiguratorForm;
 use onOffice\WPlugin\Field\SearchcriteriaFields;
 use onOffice\WPlugin\Form\FormPostConfiguration;
+use onOffice\WPlugin\Form\NewsletterFormPostConfiguration;
 use onOffice\WPlugin\Utility\__String;
 
 /**
@@ -70,6 +71,14 @@ class FormPostApplicantSearch
 		$this->_pSearchcriteriaFields = $pSearchcriteriaFields;
 
 		parent::__construct($pFormPostConfiguration, $pSearchcriteriaFields, $pFieldsCollectionConfiguratorForm);
+	}
+
+	/**
+	 * @return NewsletterFormPostConfiguration
+	 */
+	protected function getNewsletterFormPostConfiguration(): NewsletterFormPostConfiguration
+	{
+		return $this->_pFormPostContactConfiguration;
 	}
 
 	/**

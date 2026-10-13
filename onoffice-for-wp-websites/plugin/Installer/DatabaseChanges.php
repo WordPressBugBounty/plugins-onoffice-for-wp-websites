@@ -23,20 +23,23 @@ declare(strict_types=1);
 
 namespace onOffice\WPlugin\Installer;
 
-use DI\Container;
-use DI\ContainerBuilder;
+use onOffice\WPlugin\Vendor\DI\Container;
+use onOffice\WPlugin\Vendor\DI\ContainerBuilder;
 use onOffice\WPlugin\AddressList;
 use Exception;
 use onOffice\WPlugin\DataView\DataDetailViewHandler;
+use onOffice\WPlugin\Favorites;
 use onOffice\WPlugin\Form;
 use onOffice\WPlugin\DataView\DataViewSimilarEstates;
 use onOffice\WPlugin\DataView\DataDetailView;
 use onOffice\WPlugin\Template\TemplateCall;
 use onOffice\WPlugin\Types\ImageTypes;
+use onOffice\WPlugin\Types\MapProvider;
 use onOffice\WPlugin\DataView\DataSimilarView;
 use onOffice\WPlugin\WP\WPOptionWrapperBase;
 use onOffice\WPlugin\WP\WPPluginChecker;
 use onOffice\WPlugin\WP\WpdbReadCacheProxy;
+use onOffice\WPlugin\Utility\ThemeSupport;
 use wpdb;
 use function dbDelta;
 use function esc_sql;
@@ -46,7 +49,7 @@ use onOffice\WPlugin\Record\RecordManagerReadForm;
 class DatabaseChanges implements DatabaseChangesInterface
 {
 	/** @var int */
-	const MAX_VERSION = 64;
+	const MAX_VERSION = 68;
 
 	/** @var WPOptionWrapperBase */
 	private $_pWpOption;
@@ -183,6 +186,13 @@ class DatabaseChanges implements DatabaseChangesInterface
 			case $dbversion <= 63:
 				$this->addDisplayUnitAreaToForms();
 			case $dbversion <= 64:
+				$this->setCaptchaDefaultTrue();
+			case $dbversion <= 65:
+				$this->addUseBrokerRecipientToForms();
+			case $dbversion <= 66:
+				$this->repairEmptyRadioSettings();
+			case $dbversion <= 67:
+				$this->addAssignBrokerAsSupervisorToForms();
 			default:
 				$dbversion = DatabaseChanges::MAX_VERSION;
 		}
@@ -312,7 +322,7 @@ class DatabaseChanges implements DatabaseChangesInterface
 			`limitresults` int,
 			`checkduplicates` tinyint(1) NOT NULL DEFAULT '0',
 			`pages` int NOT NULL DEFAULT '0',
-			`captcha` tinyint(1) NOT NULL DEFAULT '0',
+			`captcha` tinyint(1) NOT NULL DEFAULT '1',
 			`newsletter` tinyint(1) NOT NULL DEFAULT '0',
 			`country_active` tinyint(1) NOT NULL DEFAULT '1',
 			`zip_active` tinyint(1) NOT NULL DEFAULT '1',
@@ -327,6 +337,8 @@ class DatabaseChanges implements DatabaseChangesInterface
 			`page_shortcode` tinytext NOT NULL,
 			`show_form_as_modal` tinyint(1) NOT NULL DEFAULT '1',
 			`display_unit_area` tinyint(1) NOT NULL DEFAULT '0',
+			`use_broker_recipient` tinyint(1) NOT NULL DEFAULT '0',
+			`assign_broker_as_supervisor` tinyint(1) NOT NULL DEFAULT '0',
 			PRIMARY KEY (`form_id`),
 			UNIQUE KEY `name` (`name`)
 		) $charsetCollate;";
@@ -1326,12 +1338,6 @@ class DatabaseChanges implements DatabaseChangesInterface
 		}
 	}
 
-
-	/**
-	 *
-	 *
-	 */
-
 	private function addDisplayUnitAreaToForms(): void
 	{
 		$prefix = $this->getPrefix();
@@ -1339,6 +1345,70 @@ class DatabaseChanges implements DatabaseChangesInterface
 		$columnExists = $this->_pWPDB->get_results("SHOW COLUMNS FROM $tableName LIKE 'display_unit_area'");
 		if (empty($columnExists)) {
 			$sql = "ALTER TABLE $tableName ADD COLUMN display_unit_area tinyint(1) NOT NULL DEFAULT '0'";
+			$this->_pWPDB->query($sql);
+		}
+	}
+
+	private function setCaptchaDefaultTrue(): void
+	{
+		// check if onOffice theme
+		if (ThemeSupport::isOnOfficeTheme()) {
+			$prefix = $this->getPrefix();
+			$tableName = $prefix . 'oo_plugin_forms';
+
+			$this->_pWPDB->update(
+				table: $tableName,
+				data: ['captcha' => 1],
+				where: ['captcha' => 0],
+			);
+		}
+	}
+
+	private function addUseBrokerRecipientToForms(): void
+	{
+		$prefix = $this->getPrefix();
+		$tableName = $prefix . 'oo_plugin_forms';
+		$columnExists = $this->_pWPDB->get_results("SHOW COLUMNS FROM $tableName LIKE 'use_broker_recipient'");
+		if (empty($columnExists)) {
+			$sql = "ALTER TABLE $tableName ADD COLUMN use_broker_recipient tinyint(1) NOT NULL DEFAULT '0'";
+			$this->_pWPDB->query($sql);
+		}
+	}
+
+	/**
+	 * Radio settings rendered without their checked state were overwritten with an empty string
+	 * on every save of the settings page (P#174525), so restore their defaults.
+	 */
+	private function repairEmptyRadioSettings(): void
+	{
+		$pWPPluginChecker = new WPPluginChecker;
+		$defaultValues = [
+			'onoffice-settings-title-and-description' => $pWPPluginChecker->isSEOPluginActive() ? 1 : 0,
+			'onoffice-pagination-paginationbyonoffice' => 0,
+			'onoffice-favorization-favButtonLabelFav' => Favorites::KEY_SETTING_FAVORIZE,
+			'onoffice-maps-mapprovider' => MapProvider::PROVIDER_DEFAULT,
+		];
+
+		foreach ($defaultValues as $option => $defaultValue) {
+			if ($this->_pWpOption->getOption($option, false) === '') {
+				$this->_pWpOption->updateOption($option, $defaultValue);
+			}
+		}
+	}
+
+	/**
+	 * Opt-in per form: assign the advisor the owner form is embedded on as supervisor
+	 * ("Betreuer") of both the created estate and the created address. Defaults to off so
+	 * existing installations keep their current behaviour.
+	 */
+
+	private function addAssignBrokerAsSupervisorToForms(): void
+	{
+		$prefix = $this->getPrefix();
+		$tableName = $prefix . 'oo_plugin_forms';
+		$columnExists = $this->_pWPDB->get_results("SHOW COLUMNS FROM $tableName LIKE 'assign_broker_as_supervisor'");
+		if (empty($columnExists)) {
+			$sql = "ALTER TABLE $tableName ADD COLUMN assign_broker_as_supervisor tinyint(1) NOT NULL DEFAULT '0'";
 			$this->_pWPDB->query($sql);
 		}
 	}

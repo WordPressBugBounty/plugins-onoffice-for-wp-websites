@@ -21,10 +21,12 @@
 
 namespace onOffice\WPlugin;
 
-use DI\ContainerBuilder;
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\ContainerBuilder;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 use Exception;
+use onOffice\WPlugin\API\APIClientActionGeneric;
+use onOffice\WPlugin\API\ApiClientException;
 use onOffice\WPlugin\DataFormConfiguration\DataFormConfiguration;
 use onOffice\WPlugin\DataFormConfiguration\UnknownFormException;
 use onOffice\WPlugin\Field\Collection\FieldsCollectionConfiguratorForm;
@@ -40,6 +42,8 @@ use onOffice\WPlugin\Types\FieldsCollection;
 use onOffice\WPlugin\Types\FieldTypes;
 use onOffice\WPlugin\Factory\EstateListFactory;
 use onOffice\WPlugin\DataView\DataDetailViewHandler;
+use onOffice\SDK\onOfficeSDK;
+use onOffice\WPlugin\Form\NewsletterFormPostConfiguration;
 
 /**
  *
@@ -264,9 +268,18 @@ abstract class FormPost
 		$formFields = $this->getAllowedPostVars($pFormConfig);
 		$formData = $pFormFieldValidator->getValidatedValues($formFields, $this->_pFieldsCollection);
 		$requiredFields = $this->getAllowedRequiredFields($requiredFields);
-		$requiredFieldsAreAllowed = $this->getAllowedRequiredFieldsIsRangeField($requiredFields);
+		$requiredFields = $this->getAllowedRequiredFieldsIsRangeField($requiredFields);
+		$propertyType = isset($formData['objektart']) ? $formData['objektart'] : null;
+
+		if (
+			isset($propertyType) &&
+			preg_match('/ownerleadgenerator/', $pFormConfig->getTemplate())
+		) {
+			$requiredFields = $this->getVisibleRequiredFields($requiredFields, $propertyType);
+		}
+
 		$pFormData = new FormData($pFormConfig, $formNo);
-		$pFormData->setRequiredFields($requiredFieldsAreAllowed);
+		$pFormData->setRequiredFields($requiredFields);
 		$pFormData->setFormtype($pFormConfig->getFormType());
 		$pFormData->setValues($formData);
 
@@ -308,6 +321,30 @@ abstract class FormPost
 	protected function getFieldsCollection(): FieldsCollection
 	{
 		return $this->_pFieldsCollection;
+	}
+
+	/**
+	 * @param string $field selected property type
+	 */
+	private function getVisibleRequiredFields(array $requiredFields, string $field): array
+	{
+		$json_file_path = ONOFFICE_PLUGIN_DIR . '/field-dependencies.json';
+
+		if (!file_exists($json_file_path)) {
+			return [];
+		}
+
+		$json_data = json_decode(file_get_contents($json_file_path), true);
+
+		if (empty($json_data) || !is_array($json_data)) {
+			return [];
+		}
+
+		$visibleFields = $json_data[$field] ?? [];
+		$allFields = array_unique(array_merge(...array_values($json_data)));
+		$hiddenFields = array_diff($allFields, $visibleFields);
+
+		return array_diff($requiredFields, $hiddenFields);
 	}
 
 	/**
@@ -545,4 +582,42 @@ abstract class FormPost
 	/** @return int */
 	public function getAbsolutCountResults(): int
 		{ return $this->_absolutCountResults; }
+
+	/**
+	 * @return NewsletterFormPostConfiguration
+	 */
+	abstract protected function getNewsletterFormPostConfiguration(): NewsletterFormPostConfiguration;
+
+	/**
+	 * @param int $addressId
+	 * @param DataFormConfiguration $pFormConfig
+	 * @return void
+	 * @throws ApiClientException
+	 */
+	protected function setNewsletter(int $addressId, DataFormConfiguration $pFormConfig): void
+	{
+		if (!method_exists($pFormConfig, 'getNewsletterCheckbox') || !$pFormConfig->getNewsletterCheckbox()) {
+			return;
+		}
+
+		$pNewsletterConfiguration = $this->getNewsletterFormPostConfiguration();
+
+		$pAPIClientAction = new APIClientActionGeneric(
+			$pNewsletterConfiguration->getSDKWrapper(),
+			onOfficeSDK::ACTION_ID_DO,
+			'registerNewsletter'
+		);
+
+		$pAPIClientAction->setParameters([
+			'register' => $pNewsletterConfiguration->getNewsletterAccepted(),
+		]);
+
+		$pAPIClientAction->setResourceId($addressId);
+		$pAPIClientAction->addRequestToQueue()->sendRequests();
+
+		if (!$pAPIClientAction->getResultStatus()) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception with API client object
+			throw new ApiClientException($pAPIClientAction);
+		}
+	}
 }

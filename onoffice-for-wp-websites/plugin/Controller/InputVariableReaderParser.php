@@ -25,6 +25,7 @@ use DateTimeZone;
 use DateTime;
 use Exception;
 use WP_Locale;
+use onOffice\WPlugin\RequestVariablesSanitizer;
 use onOffice\WPlugin\Types\FieldTypes;
 use onOffice\WPlugin\Utility\__String;
 use function number_format_i18n;
@@ -110,19 +111,15 @@ class InputVariableReaderParser
 			return null;
 		}
 
-		global $wp_locale;
+		$thousandSep = get_option('onoffice-settings-thousand-separator-custom', '.');
+		$decimalSep = get_option('onoffice-settings-decimal-separator', ',');
 
-		$stringThousand = ($wp_locale->number_format['thousands_sep'] === ',')
-			? __String::getNew($floatString)->replace($wp_locale->number_format['thousands_sep'], '') : $floatString;
-
-		$stringDec = __String::getNew($stringThousand)->replace
-		($wp_locale->number_format['decimal_point'], '.');
-
-		$onofficeSettingsThousandSeparator = get_option('onoffice-settings-thousand-separator');
-		if ($onofficeSettingsThousandSeparator === InputVariableReaderFormatter::DOT_THOUSAND_SEPARATOR) {
-			$stringDec = str_replace('.', '', $floatString);
-		} elseif ($onofficeSettingsThousandSeparator === InputVariableReaderFormatter::COMMA_THOUSAND_SEPARATOR) {
-			$stringDec = str_replace(',', '', $floatString);
+		$stringDec = $floatString;
+		if (!empty($thousandSep)) {
+			$stringDec = str_replace($thousandSep, '', $stringDec);
+		}
+		if ($decimalSep !== '.') {
+			$stringDec = str_replace($decimalSep, '.', $stringDec);
 		}
 
 		return floatval($stringDec);
@@ -177,6 +174,9 @@ class InputVariableReaderParser
 
 		// Optional: collapse multiple spaces
 		$cleaned = preg_replace('/\s{2,}/u', ' ', $cleaned);
+
+		// re-strip after decoding, otherwise entities like &lt; turn back into forbidden characters
+		$cleaned = RequestVariablesSanitizer::removeInvalidCharacters($cleaned);
 
 		// Don't turn empty string into null — keep original semantics
 		return $cleaned;

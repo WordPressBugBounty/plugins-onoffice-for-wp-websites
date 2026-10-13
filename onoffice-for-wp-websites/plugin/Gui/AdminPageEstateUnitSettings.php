@@ -30,6 +30,7 @@ use onOffice\WPlugin\Model\FormModelBuilder\FormModelBuilderDBEstateUnitListSett
 use onOffice\WPlugin\Record\RecordManager;
 use onOffice\WPlugin\Record\RecordManagerReadListViewEstate;
 use onOffice\WPlugin\Utility\FileVersionHelper;
+use stdClass;
 
 
 /**
@@ -94,6 +95,9 @@ class AdminPageEstateUnitSettings
 		$pFormModelLayoutDesign->setGroupSlug(self::FORM_VIEW_LAYOUT_DESIGN);
 		$pFormModelLayoutDesign->setLabel(__('Layout & Design', 'onoffice-for-wp-websites'));
 		$pFormModelLayoutDesign->addInputModel($pInputModelTemplate);
+		$pInputModelShowPriceOnRequest = $pFormModelBuilder->createInputModelShowPriceOnRequest();
+		$pFormModelLayoutDesign->addInputModel($pInputModelShowPriceOnRequest);
+
 		$this->addFormModel($pFormModelLayoutDesign);
 
 		$pInputModelPictureTypes = $pFormModelBuilder->createInputModelPictureTypes();
@@ -144,6 +148,22 @@ class AdminPageEstateUnitSettings
 			$pFormFieldsConfig = $this->getFormModelByGroupSlug($slug);
 			$this->createMetaBoxByForm($pFormFieldsConfig, 'side');
 		}
+	}
+
+	/**
+	 *
+	 * Since checkboxes are only being submitted if checked they need to be reorganized
+	 *
+	 * @param stdClass $pValues
+	 *
+	 */
+
+	protected function prepareValues(stdClass $pValues)
+	{
+		$pInputModelFactoryConfig = new \onOffice\WPlugin\Model\InputModel\InputModelDBFactoryConfigEstate();
+
+		$pBoolToFieldList = new \onOffice\WPlugin\Record\BooleanValueToFieldList($pInputModelFactoryConfig, $pValues);
+		$pBoolToFieldList->fillCheckboxValues(\onOffice\WPlugin\Model\InputModel\InputModelDBFactoryConfigEstate::INPUT_FIELD_HIGHLIGHTED);
 	}
 
 	/**

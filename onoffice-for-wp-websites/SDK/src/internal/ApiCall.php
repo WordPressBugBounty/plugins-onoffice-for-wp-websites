@@ -8,8 +8,9 @@ use onOffice\SDK\Exception\ApiCallNoActionParametersException;
 use onOffice\SDK\Exception\HttpFetchNoResultException;
 use onOffice\SDK\internal\ApiAction;
 use onOffice\SDK\internal\Request;
-use Location\Coordinate;
-use Location\Distance\Vincenty;
+// prefixed for the plugin build - a re-sync from onOfficeGmbH/sdk must re-apply this
+use onOffice\WPlugin\Vendor\Location\Coordinate;
+use onOffice\WPlugin\Vendor\Location\Distance\Vincenty;
 
 /**
  * @internal
@@ -121,6 +122,16 @@ class ApiCall
 		{
 			return;
 		}
+
+		foreach ($actionParameters as $key => $action) {
+			if (isset($action['parameters']['filter']['geo'])) {
+				unset($actionParameters[$key]['parameters']['filter']['geo']);
+			}
+			if (isset($action['parameters']['params_list_cache']['filter']['geo'])) {
+				unset($actionParameters[$key]['parameters']['params_list_cache']['filter']['geo']);
+			}
+		}
+
 		$responseHttp = $this->getFromHttp($token, $actionParameters, $httpFetch);
 
 		$result = json_decode($responseHttp, true);
@@ -215,11 +226,27 @@ class ApiCall
 			);
 			$params = $usedParameters["parameters"];
 
-			// 1. Check in-memory cache first (catches ALL duplicate calls within this PHP request)
-			$inMemoryKey = $this->getInMemoryCacheKey($usedParameters);
-			if (isset(self::$_inMemoryCache[$inMemoryKey]))
+			// params_list_cache holds the parameters the cron warmed the list under:
+			// same list, default filter, complete record set. Look the cache up under
+			// those, so a request with an active search hits the entry at all, and let
+			// applyListCacheFiltering() below trim the full set to this page.
+			$cacheParameters = $usedParameters;
+			if (isset($params['params_list_cache']) && is_array($params['params_list_cache']))
 			{
-				$inMemoryResponse = self::$_inMemoryCache[$inMemoryKey];
+				$cacheParameters['parameters'] = $params['params_list_cache'];
+			}
+
+			// $cacheKey is shared by every page and search of one list, $requestKey is not.
+			// Duplicate detection must use $requestKey: keyed by $cacheKey, two different
+			// searches on the same list look like duplicates and the second one gets the
+			// first one's records. See TestClassApiCall.
+			$cacheKey = $this->getInMemoryCacheKey($cacheParameters);
+			$requestKey = $this->getInMemoryCacheKey($usedParameters);
+
+			// 1. Check in-memory cache first (catches ALL duplicate calls within this PHP request)
+			if (isset(self::$_inMemoryCache[$cacheKey]))
+			{
+				$inMemoryResponse = self::$_inMemoryCache[$cacheKey];
 				// Apply list-specific filtering/sorting if needed (same logic as DB cache hit)
 				if (isset($params['listname']))
 				{
@@ -229,14 +256,21 @@ class ApiCall
 				continue;
 			}
 
+			// Exact response for this request, stored after an HTTP fetch below - already trimmed.
+			if ($cacheKey !== $requestKey && isset(self::$_inMemoryCache[$requestKey]))
+			{
+				$this->_responses[$requestId] = new Response($pRequest, self::$_inMemoryCache[$requestKey]);
+				continue;
+			}
+
 			// 2. Check DB cache (existing logic for list-based caching)
-			$cachedResponse = $this->getFromCache($usedParameters);
+			$cachedResponse = $this->getFromCache($cacheParameters);
 
 			if ($cachedResponse === null)
 			{
-				if (isset($sourceRequestIdByCacheKey[$inMemoryKey]))
+				if (isset($sourceRequestIdByCacheKey[$requestKey]))
 				{
-					$sourceRequestId = $sourceRequestIdByCacheKey[$inMemoryKey];
+					$sourceRequestId = $sourceRequestIdByCacheKey[$requestKey];
 					if (!isset($duplicateRequestsBySourceRequestId[$sourceRequestId]))
 					{
 						$duplicateRequestsBySourceRequestId[$sourceRequestId] = array();
@@ -258,12 +292,12 @@ class ApiCall
 
 				$actionParameters[] = $parametersThisAction;
 				$actionParametersOrder[] = $pRequest;
-				$sourceRequestIdByCacheKey[$inMemoryKey] = $requestId;
+				$sourceRequestIdByCacheKey[$requestKey] = $requestId;
 			}
 			else
 			{
-				// Store in in-memory cache for subsequent identical calls
-				self::$_inMemoryCache[$inMemoryKey] = $cachedResponse;
+				// Untrimmed, so later pages and searches get their own slice from it.
+				self::$_inMemoryCache[$cacheKey] = $cachedResponse;
 
 				if($cachedResponse != null && isset($params['listname']))
 				{
@@ -274,6 +308,7 @@ class ApiCall
 		}
 
 		$this->sendHttpRequests($token, $actionParameters, $actionParametersOrder, $httpFetch, $saveToCache);
+		$this->applyFreshGeoFiltering($actionParametersOrder);
 
 		// Reuse source results for duplicate requests that were queued in the same send cycle.
 		foreach ($duplicateRequestsBySourceRequestId as $sourceRequestId => $duplicateRequests)
@@ -334,14 +369,17 @@ class ApiCall
 			$filter = (isset($params["filter"]) && is_array($params["filter"]))
 				? $params["filter"]
 				: [];
+			$hasGeoFilter = isset($filter['geo'][0]['loc']);
 
 			if (
 				!isset($cachedResponse["data"]["records"]) ||
 				!is_array($cachedResponse["data"]["records"]) ||
-				!isset($cachedResponse["raw"]["data"]["records"]) ||
-				!is_array($cachedResponse["raw"]["data"]["records"]) ||
-				!isset($cachedResponse["types"]) ||
-				!is_array($cachedResponse["types"])
+				(!$hasGeoFilter && (
+					!isset($cachedResponse["raw"]["data"]["records"]) ||
+					!is_array($cachedResponse["raw"]["data"]["records"]) ||
+					!isset($cachedResponse["types"]) ||
+					!is_array($cachedResponse["types"])
+				))
 			) {
 				return $cachedResponse;
 			}
@@ -355,6 +393,45 @@ class ApiCall
 				$this->recordsPerPage($cachedResponse["data"]["records"], intval($params["listlimit"] ?? 20), intval($params["listoffset"] ?? 0));
 		}
 		return $cachedResponse;
+	}
+
+	/**
+	 * Apply client-side geo filtering to fresh list responses after cache writing.
+	 *
+	 * @param Request[] $actionParametersOrder
+	 */
+	private function applyFreshGeoFiltering(array $actionParametersOrder): void
+	{
+		foreach ($actionParametersOrder as $pRequest)
+		{
+			$requestId = $pRequest->getRequestId();
+			if (!isset($this->_responses[$requestId])) {
+				continue;
+			}
+
+			$usedParams = $this->normalizeFieldDependencyParameters(
+				$pRequest->getApiAction()->getActionParameters()
+			);
+			$params = $usedParams['parameters'] ?? [];
+			$geoFilter = $params['filter']['geo'][0] ?? null;
+
+			if (
+				!isset($params['listname']) ||
+				($params['formatoutput'] ?? false) != true ||
+				!is_array($geoFilter) ||
+				empty($geoFilter['loc'])
+			) {
+				continue;
+			}
+
+			$pResponse = $this->_responses[$requestId];
+			$params['listoffset'] = 0;
+			$params['listlimit'] = 500;
+			$this->_responses[$requestId] = new Response(
+				$pRequest,
+				$this->applyListCacheFiltering($pResponse->getResponseData(), $params)
+			);
+		}
 	}
 
 	/**
@@ -536,13 +613,21 @@ class ApiCall
 	{
 		if (
 			!isset($cachedResponse["data"]["records"]) ||
-			!is_array($cachedResponse["data"]["records"]) ||
-			!isset($cachedResponse["raw"]["data"]["records"]) ||
-			!is_array($cachedResponse["raw"]["data"]["records"]) ||
-			!isset($cachedResponse["types"]) ||
-			!is_array($cachedResponse["types"])
+			!is_array($cachedResponse["data"]["records"])
 		) {
 			return;
+		}
+		if (!isset($cachedResponse["raw"]["data"]["records"]) || !is_array($cachedResponse["raw"]["data"]["records"])) {
+			$cachedResponse["raw"]["data"]["records"] = [];
+			foreach ($cachedResponse["data"]["records"] as $record) {
+				$cachedResponse["raw"]["data"]["records"][] = [
+					"id" => $record["id"] ?? 0,
+					"elements" => $record["elements"] ?? [],
+				];
+			}
+		}
+		if (!isset($cachedResponse["types"]) || !is_array($cachedResponse["types"])) {
+			$cachedResponse["types"] = [];
 		}
 
 		$records = $cachedResponse["data"]["records"];
@@ -682,10 +767,19 @@ class ApiCall
 					elseif (strtolower($op) === 'in')
 					{
 						//Objekttyp verhält sich nicht wie erwartet
-						$elVal = $itemRaw["elements"][$fieldName];
+						$elVal = $itemRaw["elements"][$fieldName] ?? null;
 						if($fieldName === "Id") {
-							$elVal = str_replace(',','',$elVal);
-							$elVal = str_replace('.','',$elVal);
+							// The estate id lives in the record itself, not in "elements" -
+							// it only shows up there when "Id" was explicitly requested as a
+							// data field, which no list does. Without this fallback an Id
+							// filter matches nothing and every record is dropped, so a list
+							// bound to a contact (shortcode attribute 'address') or a
+							// favourites list renders empty as soon as it is served from the
+							// cache.
+							if ($elVal === null || $elVal === '') {
+								$elVal = $itemRaw["id"] ?? $item["id"] ?? null;
+							}
+							$elVal = str_replace([',', '.'], '', (string) $elVal);
 						}
 
 						if(!is_array($val)) {
@@ -723,8 +817,8 @@ class ApiCall
 					elseif (strtolower($op) === 'geo')
 					{
 						$km = intval($val);
-						$min = $value[0]["min"];
-						$max = $value[0]["max"];
+						$min = $value[0]["min"] ?? null;
+						$max = $value[0]["max"] ?? null;
 
 						$loc = $value[0]["loc"] ?? '';
 						if(str_starts_with($loc, "0-")) {
@@ -746,8 +840,8 @@ class ApiCall
 						$longitude = floatval($selectedCoordinates[0]);
 						$latitude = floatval($selectedCoordinates[1]);
 
-						$coordinate1 = new Coordinate($item["elements"]['laengengrad'], $item["elements"]['breitengrad']);
-						$coordinate2 = new Coordinate($longitude, $latitude);
+						$coordinate1 = new Coordinate((float)$item["elements"]['breitengrad'], (float)$item["elements"]['laengengrad']);
+						$coordinate2 = new Coordinate($latitude, $longitude);
 						$distance = $calculator->getDistance($coordinate1, $coordinate2);
 
 						if(intval($distance/1000) > $km){
@@ -835,6 +929,26 @@ class ApiCall
 				$requestParameters = $this->normalizeFieldDependencyParameters(
 					$pResponse->getRequest()->getApiAction()->getActionParameters()
 				);
+
+				// The listname key ignores listoffset, so only the COMPLETE set may be stored.
+				// Skip partial/paginated pages; the full set is (re)built by renewCache().
+				$params = $requestParameters['parameters'] ?? [];
+				$records = $responseData['data']['records'] ?? null;
+				if (isset($params['listname']) && is_array($records))
+				{
+					$cntAbsolute = $responseData['data']['meta']['cntabsolute'] ?? null;
+					if (is_array($cntAbsolute)) {
+						$cntAbsolute = $cntAbsolute[0] ?? null;
+					}
+
+					$isBeyondFirstPage = (int) ($params['listoffset'] ?? 0) > 0;
+					$isTruncated = is_numeric($cntAbsolute) && count($records) < (int) $cntAbsolute;
+
+					if ($isBeyondFirstPage || $isTruncated) {
+						continue;
+					}
+				}
+
 				$this->writeCache(serialize($responseData), $requestParameters);
 			}
 		}

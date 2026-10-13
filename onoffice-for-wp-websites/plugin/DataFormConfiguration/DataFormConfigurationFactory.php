@@ -419,12 +419,14 @@ class DataFormConfigurationFactory
 	{
 		$pConfig->setRecipient($row['recipient']);
 		$pConfig->setDefaultRecipient($row['default_recipient']);
+		$pConfig->setUseBrokerRecipient((bool)($row['use_broker_recipient'] ?? false));
 		$pConfig->setSubject($row['subject']);
 		$pConfig->setPages($row['pages']);
 		$pConfig->setCreateOwner((bool)$row['createaddress']);
 		$pConfig->setCheckDuplicateOnCreateAddress((bool)$row['checkduplicates']);
 		$pConfig->setContactTypeField($row['contact_type'] ?? []);
 		$pConfig->setShowFormAsModal((bool)$row['show_form_as_modal']);
+		$pConfig->setAssignBrokerAsSupervisor((bool)($row['assign_broker_as_supervisor'] ?? false));
 	}
 
 
@@ -439,6 +441,7 @@ class DataFormConfigurationFactory
 	{
 		$pConfig->setRecipient($row['recipient']);
 		$pConfig->setDefaultRecipient($row['default_recipient']);
+		$pConfig->setUseBrokerRecipient((bool)($row['use_broker_recipient'] ?? false));
 		$pConfig->setSubject($row['subject']);
 		$pConfig->setPages($row['pages']);
 		$pConfig->setCreateInterest((bool)$row['createaddress']);

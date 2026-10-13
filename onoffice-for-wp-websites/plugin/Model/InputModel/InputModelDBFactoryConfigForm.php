@@ -45,6 +45,12 @@ class InputModelDBFactoryConfigForm
 	const INPUT_FORM_DEFAULT_RECIPIENT = 'formDefaultRecipient';
 
 	/** */
+	const INPUT_FORM_USE_BROKER_RECIPIENT = 'formUseBrokerRecipient';
+
+	/** */
+	const INPUT_FORM_ASSIGN_BROKER_AS_SUPERVISOR = 'formAssignBrokerAsSupervisor';
+
+	/** */
 	const INPUT_FORM_SUBJECT = 'formSubject';
 
 	/** */
@@ -222,6 +228,14 @@ class InputModelDBFactoryConfigForm
 		self::INPUT_FORM_DEFAULT_RECIPIENT => [
 			self::KEY_TABLE => 'oo_plugin_forms',
 			self::KEY_FIELD => 'default_recipient',
+		],
+		self::INPUT_FORM_USE_BROKER_RECIPIENT => [
+			self::KEY_TABLE => 'oo_plugin_forms',
+			self::KEY_FIELD => 'use_broker_recipient',
+		],
+		self::INPUT_FORM_ASSIGN_BROKER_AS_SUPERVISOR => [
+			self::KEY_TABLE => 'oo_plugin_forms',
+			self::KEY_FIELD => 'assign_broker_as_supervisor',
 		],
 		self::INPUT_FORM_SUBJECT => [
 			self::KEY_TABLE => 'oo_plugin_forms',

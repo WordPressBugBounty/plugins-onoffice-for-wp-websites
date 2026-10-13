@@ -1,5 +1,80 @@
 # Change Log
 
+## 4.1.0
+
+### Breaking changes
+
+* The minimum jQuery version supported is the latest version in the 1.x, 2.x, and 3.x series (#5525, #5955)
+* Removed support for legacy Internet Explorer (versions older than IE 11) (#5834)
+* Removed modules deprecated in 4.0.0 (#5815)
+  * Removed legacy support for `<input />` tags
+  * Removed legacy support for `initSelection`
+  * Removed legacy support for `query`
+  * Removed old `select2/compat/matcher` module
+* Removed undocumented CSS-related options (#5815)
+  * Removed `dropdownCss` option
+  * Removed `adaptDropdownCss` option
+  * Removed `containerCss` option
+  * Removed `adaptContainerCss` option
+* The `containerCssClass` option has been renamed to `selectionCssClass` (#5815, #5847)
+* Significant changes to the HTML/CSS for the selection area impacting custom themes (#5842)
+* New CSS classes for the dropdown results to better target highlighted / selected results (#5841)
+* The search box in the selection area for multiple selects has been changed from an `<input />` to a `<textarea>` to support pasting multiple lines (#5806)
+* Change tab key to select the currently highlighted option instead of just closing (#5759)
+* Tags will be highlighted first in the results even if other options have been selected (#5812)
+
+### New features / improvements
+
+* `dropdownCssClass` and `selectionCssClass` are now available in all builds of Select2 (#5815)
+* Calls to get the currently selected options are now considerably faster on large datasets (#5775)
+* Selected results in the dropdown should now be properly announced to screen readers (#5841)
+* Significant improvements were made to make the selection area accessible (#5824, #5842, #5916, #5942, #5973)
+* Allow pasting multiple lines into the search field for tokenization (#5806)
+* Add support for jQuery 4.0.0 (#6332)
+* Add `originalEvent` to `close` trigger arguments (#6079)
+
+### Bug fixes
+
+* Resize the selection search on close to properly display the placeholder (#5766)
+* Change internal data ID generation to be more unique and prevent conflicts with numeric IDs (#5840)
+* Internet Explorer 11 no longer steals focus of search box while tagging (#5842)
+* Fix slow memory leak caused by not clearing cache on destroy (#5965)
+* Fix multiple select placeholder misalignment (#6277)
+* Fix RTL `selection__choice__remove` button (#6257)
+* Fix support for data-placeholder values which consist solely of digits (#6297)
+* Fix unselection of items from AJAX data sources with non-string identifiers (#6241, #6335)
+* Convert optgroup child data identifiers to string datatype (#6338)
+
+### Translations
+
+* Add Esperanto translation (`eo`) (#5823)
+* Add Punjabi translations (`pa`) (#5831)
+* Add Telugu translations (`te`) (#5881)
+* Updated Hungarian translations (`hu`) for 4.1.0 changes (#5970)
+* Add Luxembourgish translation (`lb`) (#6131)
+* Add Uyghur (Uighur) translation (`ug`) (#6166)
+* Update Arabic translation with removeItem string (`ar`) (#6175)
+* Add missing Traditional Chinese translations (`zh-TW`) (#6157)
+* Update Indonesian translation (`id`) (#6153)
+* Update Turkish translation (`tr`) (#6123)
+* Update Romanian translation (`ro`) (#6190)
+* Updated DE/ES/FR/PT/PT-BR translations (#6132)
+* Update Polish translation (`pl`) (#6097, #6377)
+* Update Norwegian translations (`nb`) (#6213)
+* Update Persian/Farsi translation (`fa`) (#6258)
+* Fix Dutch translation (`nl`) removing unwanted dots for noResults (#6269)
+* Fix Brazilian Portuguese translation typo (#6200)
+* Add missing Bosnian, Catalan, Danish, and Finnish translations (#6305)
+
+### Miscellaneous
+
+* The `amdLanguageBase` option no longer has an effect because the full build does not include any dynamically loaded modules (#5815)
+* Replace jQuery `attr`/`removeAttr` with native `getAttribute`/`setAttribute`/`removeAttribute` (#6227, #6228)
+* Replace jQuery `addClass` with native `classList.add` (#6229)
+* Remove jQuery from Utils and Translation modules (#6233)
+* Remove use of jQuery `prop()` function (#6289)
+* Switch NPM publishing to trusted publishing with provenance (#6405)
+
 ## 4.0.13
 
 ### New features / improvements

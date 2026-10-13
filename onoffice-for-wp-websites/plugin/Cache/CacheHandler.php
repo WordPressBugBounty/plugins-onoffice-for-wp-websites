@@ -37,9 +37,10 @@ use onOffice\WPlugin\DataView\DataListViewFactory;
 use onOffice\WPlugin\DataView\DataListViewFactoryAddress;
 use onOffice\WPlugin\Factory\EstateListFactory;
 use onOffice\WPlugin\Filter\DefaultFilterBuilderFactory;
-use DI\Container;
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Region\RegionController;
+use onOffice\WPlugin\Vendor\DI\Container;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 
 
 /**
@@ -81,6 +82,7 @@ class CacheHandler
 			/* @var $pCache onOfficeSDKCache */
 			$pCache->clearAll();
 		}
+		RegionController::clearRegionOptionsCache();
 	}
 
 

@@ -27,19 +27,23 @@
 
 namespace onOffice\WPlugin;
 
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 use onOffice\SDK\onOfficeSDK;
 use onOffice\WPlugin\API\APIClientActionGeneric;
 use onOffice\WPlugin\API\ApiClientException;
 use onOffice\WPlugin\DataFormConfiguration\DataFormConfigurationOwner;
+use onOffice\WPlugin\DataView\DataAddressDetailViewHandler;
+use onOffice\WPlugin\Factory\AddressListFactory;
 use onOffice\WPlugin\Field\Collection\FieldsCollectionConfiguratorForm;
 use onOffice\WPlugin\Field\EstateFields;
 use onOffice\WPlugin\Field\SearchcriteriaFields;
+use onOffice\WPlugin\Form\FormAddressCreator;
 use onOffice\WPlugin\Form\FormPostConfiguration;
 use onOffice\WPlugin\Form\FormPostOwnerConfiguration;
 use onOffice\WPlugin\Types\FieldTypes;
-use onOffice\WPlugin\Utility\__String;
+use onOffice\WPlugin\Utility\ThemeSupport;
+use onOffice\WPlugin\Form\NewsletterFormPostConfiguration;
 
 /**
  *
@@ -63,6 +67,21 @@ class FormPostOwner
 	/** @var EstateFields */
 	private $_pEstateFields = null;
 
+	/** @var AddressListFactory */
+	private $_pAddressDetailFactory;
+
+	/** @var int|null Address id behind the resolved recipient, if already known (set by getBrokerRecipient()) */
+	private $_recipientAddressId = null;
+
+	/**
+	 * @var int|null Address id of the detail page the form sits on (set by getBrokerRecipient()).
+	 *      Unlike _recipientAddressId this is set even when that address has no email, because
+	 *      the supervisor can be resolved through the user linked to it either way. It must stay
+	 *      separate: _recipientAddressId also decides who becomes the estate's contact broker,
+	 *      and making an address without an email the recipient of the lead would lose the mail.
+	 */
+	private $_detailPageAddressId = null;
+
 
 	/**
 	 * @param FormPostConfiguration $pFormPostConfiguration
@@ -70,17 +89,28 @@ class FormPostOwner
 	 * @param SearchcriteriaFields $pSearchcriteriaFields
 	 * @param FieldsCollectionConfiguratorForm $pFieldsCollectionConfiguratorForm
 	 * @param EstateFields $pEstateFields
+	 * @param AddressListFactory $pAddressDetailFactory
 	 */
 	public function __construct(
 		FormPostConfiguration $pFormPostConfiguration,
 		FormPostOwnerConfiguration $pFormPostOwnerConfiguration,
 		SearchcriteriaFields $pSearchcriteriaFields,
 		FieldsCollectionConfiguratorForm $pFieldsCollectionConfiguratorForm,
-		EstateFields $pEstateFields)
+		EstateFields $pEstateFields,
+		AddressListFactory $pAddressDetailFactory)
 	{
 		$this->_pFormPostOwnerConfiguration = $pFormPostOwnerConfiguration;
 		$this->_pEstateFields = $pEstateFields;
+		$this->_pAddressDetailFactory = $pAddressDetailFactory;
 		parent::__construct($pFormPostConfiguration, $pSearchcriteriaFields, $pFieldsCollectionConfiguratorForm);
+	}
+
+	/**
+	 * @return NewsletterFormPostConfiguration
+	 */
+	protected function getNewsletterFormPostConfiguration(): NewsletterFormPostConfiguration
+	{
+		return $this->_pFormPostOwnerConfiguration;
 	}
 
 	/**
@@ -99,7 +129,7 @@ class FormPostOwner
 		$pDataFormConfiguration = $pFormData->getDataFormConfiguration();
 		$this->_pFormData = $pFormData;
 
-		$recipient = $pDataFormConfiguration->getRecipientByUserSelection();
+		$recipient = $this->determineRecipient($pDataFormConfiguration);
 
 		$pWPQuery = $this->_pFormPostOwnerConfiguration->getWPQueryWrapper()->getWPQuery();
 		$estateId = $pWPQuery->get('estate_id', null);
@@ -111,6 +141,7 @@ class FormPostOwner
 
 		try {
 			if ( $pDataFormConfiguration->getCreateOwner() ) {
+				$supervisor = $this->determineSupervisor($pDataFormConfiguration, $recipient);
 				$checkDuplicate = $pDataFormConfiguration->getCheckDuplicateOnCreateAddress();
 				$contactType = $pDataFormConfiguration->getContactType();
 				$enableCreateTask = $pDataFormConfiguration->getEnableCreateTask();
@@ -120,19 +151,22 @@ class FormPostOwner
 					$latestAddressIdOnEnterPrise = $this->_pFormPostOwnerConfiguration->getFormAddressCreator()->getLatestAddressIdInOnOfficeEnterprise();
 				}
 				$addressId  = $this->_pFormPostOwnerConfiguration->getFormAddressCreator()
-					->createOrCompleteAddress($pFormData, $checkDuplicate, $contactType, $estateId);
+					->createOrCompleteAddress($pFormData, $checkDuplicate, $contactType, $estateId,
+						$supervisor);
 				$this->_messageDuplicateAddressData = $this->_pFormPostOwnerConfiguration->getFormAddressCreator()
 					->getMessageDuplicateAddressData($pFormData, $addressId, $latestAddressIdOnEnterPrise);
 				$estateData = $this->getEstateData();
 				$estateId   = $this->createEstate( $estateData );
+				$this->assignEstateSupervisor( $estateId, $supervisor['id'] ?? '' );
 				if (!empty($pDataFormConfiguration->getSubject())) {
 					$subject = $this->generateCustomEmailSubject($pDataFormConfiguration->getSubject(), $pFormData->getFieldLabelsForEmailSubject($this->getFieldsCollection()), $estateId, $pDataFormConfiguration->getInputs());
 				}
+				$this->assignEstateContactBroker( $estateId, $recipient );
 				$this->createOwnerRelation( $estateId, $addressId );
 				if ($writeActivity) {
 					$this->_pFormPostOwnerConfiguration->getFormAddressCreator()->createAgentsLog($pDataFormConfiguration, $addressId, $estateId);
 				}
-				$this->setNewsletter( $addressId );
+				$this->setNewsletter( $addressId, $pDataFormConfiguration );
 				if ($enableCreateTask) {
 					$this->_pFormPostOwnerConfiguration->getFormAddressCreator()->createTask($pDataFormConfiguration, $addressId, $estateId);
 				}
@@ -141,6 +175,381 @@ class FormPostOwner
 			if ( null != $recipient ) {
 				$this->sendContactRequest( $recipient, $estateId ?? 0, $estateData, $subject );
 			}
+		}
+	}
+
+	/**
+	 * Determines the email address the lead will be sent to.
+	 *
+	 * @param DataFormConfigurationOwner $pDataFormConfiguration
+	 * @return string
+	 */
+
+	private function determineRecipient(DataFormConfigurationOwner $pDataFormConfiguration): string
+	{
+		$recipient = $pDataFormConfiguration->getRecipientByUserSelection();
+
+		if ($pDataFormConfiguration->getUseBrokerRecipient()) {
+			// Falls back to the recipient computed above (the admin's default/custom-email
+			// selection), not the global default, if this isn't an address detail page or
+			// the address has no email.
+			$recipient = $this->getBrokerRecipient() ?? $recipient;
+		}
+
+		return $recipient;
+	}
+
+	/**
+	 * Returns the advisor to enter as supervisor ("Betreuer") of the created estate and address,
+	 * or [] when that doesn't apply.
+	 *
+	 * Deliberately tied to the address detail page: a set _detailPageAddressId is the marker
+	 * that getBrokerRecipient() actually identified the address the form sits on. Without it
+	 * $recipient is just the address configured in the backend, which must not be turned into a
+	 * supervisor.
+	 *
+	 * The theme is checked here and not only where the option is rendered: the checkbox is
+	 * exclusive to the onOffice themes, but the stored value survives a theme switch, and
+	 * AdminPageFormSettingsBase::save_form() only writes columns whose input model is
+	 * registered - so under a foreign theme the option could neither take effect nor be
+	 * switched off again.
+	 *
+	 * Non-fatal by design, like assignEstateContactBroker(): a supervisor that cannot be
+	 * resolved must not stop the estate, the address or the email from being created.
+	 *
+	 * Resolved in three steps: the address record linked in the user's account first, the email
+	 * of that address matched against the users' second, and if neither answers, nothing is set
+	 * at all - the record then keeps the supervisor onOffice assigns on its own, which is the
+	 * API user this plugin authenticates as. That last step is the intended outcome, not a
+	 * missing branch, so don't "fix" it by adding a fallback here.
+	 *
+	 * The first step doesn't care whether the advisor's address carries an email: the link in
+	 * the user's account answers the question on its own.
+	 *
+	 * @param DataFormConfigurationOwner $pDataFormConfiguration
+	 * @param string $recipient
+	 * @return array empty, or ['id' => string, 'username' => string]
+	 */
+
+	private function determineSupervisor(
+		DataFormConfigurationOwner $pDataFormConfiguration, string $recipient): array
+	{
+		if (!$pDataFormConfiguration->getAssignBrokerAsSupervisor() ||
+			!ThemeSupport::isOnOfficeTheme() ||
+			$this->_detailPageAddressId === null) {
+			return [];
+		}
+
+		try {
+			$pFormAddressCreator = $this->_pFormPostOwnerConfiguration->getFormAddressCreator();
+
+			// The address linked in the user's account ("adrId") is the link onOffice itself
+			// maintains, so it is asked first. Matching the email is only the fallback for
+			// accounts that don't maintain it - it can be wrong in both directions: an advisor
+			// whose account email differs from the one on their address record isn't found, and
+			// an unrelated user who happens to share the email is.
+			$supervisor = $this->findLinkedSupervisor($pFormAddressCreator);
+
+			// _recipientAddressId is what tells us $recipient really is this address' email. If
+			// the address has none, getBrokerRecipient() fell back to the address configured in
+			// the backend, and matching that against the users would pick a supervisor that has
+			// nothing to do with the page the form sits on.
+			if ($supervisor === [] && $this->_recipientAddressId !== null) {
+				$supervisor = $pFormAddressCreator->getUserByEmail($recipient);
+			}
+
+			if ($supervisor === []) {
+				// The address id is enough to diagnose this - the advisor's email doesn't
+				// belong in the error log.
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- diagnostics for a silently skipped optional step
+				error_log('onOffice: no onOffice user has address ' . $this->_detailPageAddressId
+					. ' linked to their account or matches its email - no supervisor was set');
+			}
+
+			return $supervisor;
+		} catch (ApiClientException $pException) {
+			// ApiClientException doesn't set a message via getMessage() (its constructor doesn't
+			// pass one to the parent) - the actual API error details are only in __toString().
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- diagnostics for a silently skipped optional step
+			error_log('onOffice: could not resolve the supervisor for the owner form: ' . $pException);
+			return [];
+		}
+	}
+
+	/**
+	 * Reads the user who has the recipient's address record linked to their account.
+	 *
+	 * Caught separately from the rest of determineSupervisor(): the 'user' resource needs rights
+	 * that reading the user list for the email match doesn't, so an account that cannot read it
+	 * has to end up in the fallback rather than without a supervisor.
+	 *
+	 * @param FormAddressCreator $pFormAddressCreator
+	 * @return array empty, or ['id' => string, 'username' => string]
+	 */
+
+	private function findLinkedSupervisor(FormAddressCreator $pFormAddressCreator): array
+	{
+		try {
+			return $pFormAddressCreator->getUserByAddressId($this->_detailPageAddressId);
+		} catch (ApiClientException $pException) {
+			// ApiClientException doesn't set a message via getMessage() (its constructor doesn't
+			// pass one to the parent) - the actual API error details are only in __toString().
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- diagnostics for a silently skipped optional step
+			error_log('onOffice: could not read the user linked to address '
+				. $this->_detailPageAddressId . ', falling back to the email: ' . $pException);
+			return [];
+		}
+	}
+
+	/**
+	 * Returns the email address of the real estate advisor whose detail page this form is
+	 * embedded on, or null if the form isn't on an advisor detail page or the advisor has no email.
+	 *
+	 * @return string|null
+	 */
+
+	private function getBrokerRecipient(): ?string
+	{
+		$pDataAddressDetailViewHandler = new DataAddressDetailViewHandler();
+		$pAddressDataView = $pDataAddressDetailViewHandler->getAddressDetailView();
+		$pageId = intval($pAddressDataView->getPageId());
+
+		if ($pageId === 0) {
+			return null;
+		}
+
+		// Same query var the address detail page itself uses to know which address to
+		// display (see ContentFilterShortCodeAddressDetail::getAddressId())
+		$pWPQuery = $this->_pFormPostOwnerConfiguration->getWPQueryWrapper()->getWPQuery();
+		$addressId = $pWPQuery->query_vars['address_id'] ?? 0;
+
+		if (empty($addressId)) {
+			return null;
+		}
+
+		$this->_detailPageAddressId = (int) $addressId;
+
+		// Load the address the same way the address detail page itself does (AddressDetail::
+		// loadSingleAddress()
+		$defaultFields = ['defaultemail' => 'Email'];
+		$addressList = $this->_pAddressDetailFactory->createAddressDetail((int) $addressId);
+		$addressList->loadAddressesById([(int) $addressId], $defaultFields);
+		$email = $addressList->getAddressById((int) $addressId)['Email'] ?? '';
+
+		if ($email === '') {
+			return null;
+		}
+
+		$this->_recipientAddressId = (int) $addressId;
+		return $email;
+	}
+
+	/**
+	 * Assigns the address behind the resolved recipient as the estate's broker/contact person
+	 * ("Makler", RELATION_TYPE_CONTACT_BROKER). The onOffice API routes contactaddress
+	 * notifications for an estate to this person once an estateid is present, ignoring the
+	 * 'recipient' override otherwise - so this has to be set for the recipient to actually
+	 * receive the mail. Must run after the estate exists and before sendContactRequest().
+	 *
+	 * Note: RELATION_TYPE_CONTACT_PERSON ("contactPersonAll") is a different, additional field
+	 * ("Benutzer") that has no effect on mail routing - RELATION_TYPE_CONTACT_BROKER ("Makler")
+	 * is the one that matters here.
+	 *
+	 * Prefers the address id already known from getBrokerRecipient() (the address whose detail
+	 * page the form is embedded on) over re-resolving it by email, since that address may not
+	 * be reliably findable again via the 'address' module's defaultemail filter (e.g. duplicate
+	 * or differently-cased emails across records), and since RELATION_TYPE_CONTACT_BROKER only
+	 * accepts broker/employee addresses, which a generic email match isn't guaranteed to be.
+	 *
+	 * onOffice assigns a default broker to every newly created estate, resulting in more than
+	 * one contact-broker relation (the default plus the one added here) unless the default is
+	 * removed - and the API notifies every assigned broker, not just the last one added. So once
+	 * the resolved recipient's relation is in place, every other contact-broker relation for this
+	 * estate is deleted, leaving the resolved recipient as the sole broker/recipient. The new
+	 * relation is added before the old ones are removed, so a failure here never leaves the
+	 * estate without any broker at all.
+	 *
+	 * Non-fatal by design: failing to assign a contact person shouldn't block the estate/owner
+	 * from being created, nor the contact email from being sent.
+	 *
+	 * @param int $estateId
+	 * @param string $recipient
+	 */
+
+	private function assignEstateContactBroker(int $estateId, string $recipient): void
+	{
+		if ($recipient === '' && $this->_recipientAddressId === null) {
+			return;
+		}
+
+		try {
+			$addressId = $this->_recipientAddressId ?? $this->findAddressIdByEmail($recipient);
+
+			if ($addressId === null) {
+				return;
+			}
+
+			$this->createContactBrokerRelation($estateId, $addressId);
+
+			foreach ($this->findContactBrokerAddressIds($estateId) as $existingAddressId) {
+				if ($existingAddressId !== $addressId) {
+					$this->deleteContactBrokerRelation($estateId, $existingAddressId);
+				}
+			}
+		} catch (ApiClientException $pException) {
+			// ApiClientException doesn't set a message via getMessage() (its constructor doesn't
+			// pass one to the parent) - the actual API error details are only in __toString().
+			error_log('onOffice: could not assign estate contact broker: ' . $pException);
+		}
+	}
+
+	/**
+	 * @param int $estateId
+	 * @return int[]
+	 * @throws API\APIEmptyResultException
+	 * @throws ApiClientException
+	 */
+
+	private function findContactBrokerAddressIds(int $estateId): array
+	{
+		$pSDKWrapper = $this->_pFormPostOwnerConfiguration->getSDKWrapper();
+		$pApiClientAction = new APIClientActionGeneric($pSDKWrapper, onOfficeSDK::ACTION_ID_GET, 'idsfromrelation');
+		$pApiClientAction->setParameters([
+			'parentids' => [$estateId],
+			'relationtype' => onOfficeSDK::RELATION_TYPE_CONTACT_BROKER,
+		]);
+		$pApiClientAction->addRequestToQueue()->sendRequests();
+
+		$records = $pApiClientAction->getResultRecords();
+		$addressIds = $records[0]['elements'][$estateId] ?? [];
+
+		return array_map('intval', $addressIds);
+	}
+
+	/**
+	 * @param string $email
+	 * @return int|null
+	 * @throws API\APIEmptyResultException
+	 * @throws ApiClientException
+	 */
+
+	private function findAddressIdByEmail(string $email): ?int
+	{
+		$pSDKWrapper = $this->_pFormPostOwnerConfiguration->getSDKWrapper();
+		$pApiClientAction = new APIClientActionGeneric($pSDKWrapper, onOfficeSDK::ACTION_ID_READ, 'address');
+		$pApiClientAction->setParameters([
+			'data' => ['Id'],
+			'filter' => [
+				'defaultemail' => [['op' => '=', 'val' => $email]],
+			],
+			'listlimit' => 1,
+		]);
+		$pApiClientAction->addRequestToQueue()->sendRequests();
+
+		$records = $pApiClientAction->getResultRecords();
+
+		return isset($records[0]['id']) ? (int) $records[0]['id'] : null;
+	}
+
+	/**
+	 *
+	 * @param int $estateId
+	 * @param int $addressId
+	 * @throws ApiClientException
+	 *
+	 */
+
+	private function createContactBrokerRelation(int $estateId, int $addressId): void
+	{
+		$pSDKWrapper = $this->_pFormPostOwnerConfiguration->getSDKWrapper();
+
+		$pApiClientAction = new APIClientActionGeneric
+			($pSDKWrapper, onOfficeSDK::ACTION_ID_CREATE, 'relation');
+		$pApiClientAction->setParameters([
+			'relationtype' => onOfficeSDK::RELATION_TYPE_CONTACT_BROKER,
+			'parentid' => $estateId,
+			'childid' => $addressId,
+		]);
+
+		$pApiClientAction->addRequestToQueue();
+		$pSDKWrapper->sendRequests();
+
+		if (!$pApiClientAction->getResultStatus()) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- ApiClientException is for internal API error handling
+			throw new ApiClientException($pApiClientAction);
+		}
+	}
+
+	/**
+	 *
+	 * @param int $estateId
+	 * @param int $addressId
+	 * @throws ApiClientException
+	 *
+	 */
+
+	private function deleteContactBrokerRelation(int $estateId, int $addressId): void
+	{
+		$pSDKWrapper = $this->_pFormPostOwnerConfiguration->getSDKWrapper();
+
+		$pApiClientAction = new APIClientActionGeneric
+			($pSDKWrapper, onOfficeSDK::ACTION_ID_DELETE, 'relation');
+		$pApiClientAction->setParameters([
+			'relationtype' => onOfficeSDK::RELATION_TYPE_CONTACT_PERSON,
+			'parentid' => $estateId,
+			'childid' => $addressId,
+		]);
+
+		$pApiClientAction->addRequestToQueue();
+		$pSDKWrapper->sendRequests();
+
+		if (!$pApiClientAction->getResultStatus()) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- ApiClientException is for internal API error handling
+			throw new ApiClientException($pApiClientAction);
+		}
+	}
+
+	/**
+	 * Sets the advisor as supervisor ("Betreuer") of the estate that was just created, by
+	 * relation - the same way FormAddressCreator does it for the address.
+	 *
+	 * Non-fatal by design, like assignEstateContactBroker(): a supervisor that cannot be assigned
+	 * must not stop the estate, the address or the email from being created.
+	 *
+	 * @param int $estateId
+	 * @param string $supervisorUserId
+	 */
+
+	private function assignEstateSupervisor(int $estateId, string $supervisorUserId): void
+	{
+		if ($supervisorUserId === '') {
+			return;
+		}
+
+		// estate = parent record, user = child record - see the constant in onOfficeSDK
+		$pSDKWrapper = $this->_pFormPostOwnerConfiguration->getSDKWrapper();
+		$pApiClientAction = new APIClientActionGeneric($pSDKWrapper, onOfficeSDK::ACTION_ID_CREATE,
+			'relation');
+		$pApiClientAction->setParameters([
+			'relationtype' => onOfficeSDK::RELATION_TYPE_ESTATE_USER_OFFICER,
+			'parentid' => $estateId,
+			'childid' => $supervisorUserId,
+		]);
+
+		try {
+			$pApiClientAction->addRequestToQueue();
+			$pSDKWrapper->sendRequests();
+
+			if (!$pApiClientAction->getResultStatus()) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- diagnostics for a silently skipped optional step
+				error_log('onOffice: could not assign the supervisor of estate ' . $estateId);
+			}
+		} catch (ApiClientException $pException) {
+			// ApiClientException doesn't set a message via getMessage() (its constructor doesn't
+			// pass one to the parent) - the actual API error details are only in __toString().
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- diagnostics for a silently skipped optional step
+			error_log('onOffice: could not assign the supervisor of estate ' . $estateId . ': '
+				. $pException);
 		}
 	}
 
@@ -209,36 +618,6 @@ class FormPostOwner
 		}
 
 		return $estateData;
-	}
-
-
-	/**
-	 *
-	 * @param  FormData  $pFormData
-	 *
-	 * @return void
-	 * @throws ApiClientException
-	 * @throws Field\UnknownFieldException
-	 */
-
-	private function setNewsletter( $addressId )
-	{
-		if ( ! $this->_pFormPostOwnerConfiguration->getNewsletterAccepted() ) {
-			// No subscription for newsletter, which is ok
-			return;
-		}
-
-		$pSDKWrapper      = $this->_pFormPostOwnerConfiguration->getSDKWrapper();
-		$pAPIClientAction = new APIClientActionGeneric
-		( $pSDKWrapper, onOfficeSDK::ACTION_ID_DO, 'registerNewsletter' );
-		$pAPIClientAction->setParameters( [ 'register' => true ] );
-		$pAPIClientAction->setResourceId( $addressId );
-		$pAPIClientAction->addRequestToQueue()->sendRequests();
-
-		if ( ! $pAPIClientAction->getResultStatus() ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- ApiClientException is for internal API error handling
-			throw new ApiClientException( $pAPIClientAction );
-		}
 	}
 
 	/**

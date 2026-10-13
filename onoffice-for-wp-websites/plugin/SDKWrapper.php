@@ -28,11 +28,13 @@
 
 namespace onOffice\WPlugin;
 
-use DI\ContainerBuilder;
+use onOffice\WPlugin\Vendor\DI\Container;
+use onOffice\WPlugin\Vendor\DI\ContainerBuilder;
 use onOffice\SDK\Cache\onOfficeSDKCache;
 use onOffice\SDK\onOfficeSDK;
 use onOffice\WPlugin\API\APIClientActionGeneric;
 use onOffice\WPlugin\Cache\DBCache;
+use onOffice\WPlugin\Controller\EstateListEnvironmentDefault;
 use onOffice\WPlugin\Utility\SymmetricEncryption;
 use onOffice\WPlugin\WP\WPOptionWrapperBase;
 use onOffice\WPlugin\WP\WPOptionWrapperDefault;
@@ -87,7 +89,7 @@ class SDKWrapper
 	 *
 	 */
 
-	/** @var \DI\Container Shared container instance to avoid rebuilding */
+	/** @var \onOffice\WPlugin\Vendor\DI\Container Shared container instance to avoid rebuilding */
 	private static $_pSharedContainer = null;
 
 	public function __construct(
@@ -154,19 +156,30 @@ class SDKWrapper
 		$pOptionsWrapper = $this->_pWPOptionWrapper;
 		$token = $pOptionsWrapper->getOption('onoffice-settings-apikey');
 		$secret = $pOptionsWrapper->getOption('onoffice-settings-apisecret');
+		$apiClaim = (string) $pOptionsWrapper->getOption('onoffice-settings-apiclaim', '');
 		if (defined('ONOFFICE_CREDENTIALS_ENC_KEY')) {
 			try {
-				$secretDecrypt = $this->_encrypter->decrypt($secret, ONOFFICE_CREDENTIALS_ENC_KEY);
-				$tokenDecrypt = $this->_encrypter->decrypt($token, ONOFFICE_CREDENTIALS_ENC_KEY);
-			}catch (\RuntimeException $exception){
+				$secret = $this->_encrypter->decrypt($secret, ONOFFICE_CREDENTIALS_ENC_KEY);
+				$token = $this->_encrypter->decrypt($token, ONOFFICE_CREDENTIALS_ENC_KEY);
+			} catch (\RuntimeException $exception) {
 				$this->_pSDK->removeCacheInstances();
-				$secretDecrypt = $secret;
-				$tokenDecrypt = $token;
+				$secret = $pOptionsWrapper->getOption('onoffice-settings-apisecret');
+				$token = $pOptionsWrapper->getOption('onoffice-settings-apikey');
 			}
-			$secret = $secretDecrypt;
-			$token = $tokenDecrypt;
+
+			// An empty claim is the normal case - installations without an
+			// Extended Claim store nothing here, and decrypt('') always throws.
+			// Kept out of the try above so a broken claim cannot drag token and
+			// secret back to their still-encrypted values.
+			if ($apiClaim !== '') {
+				try {
+					$apiClaim = $this->_encrypter->decrypt($apiClaim, ONOFFICE_CREDENTIALS_ENC_KEY);
+				} catch (\RuntimeException $exception) {
+					// leave the raw value; a broken claim must not invalidate token/secret
+				}
+			}
 		}
-		$this->_pSDK->sendRequests($token, $secret, $saveToCache);
+		$this->_pSDK->sendRequests($token, $secret, $saveToCache, $apiClaim);
 		$errors = $this->_pSDK->getErrors();
 
 		foreach ($this->_callbacksAfterSend as $handle => $callback) {
@@ -224,11 +237,14 @@ class SDKWrapper
 			$addressLists = $this->getAddressLists($listName);
 			$this->_caches = [new DBCache(['ttl' => 3600])];
 			$fieldsInformation = $this->getAllFields($languages);
+			$pEstateListEnvironment = $this->createEstateListEnvironment();
+
+			$allEstates = [];
 
 			foreach ($this->_caches as $pCache) {
 				foreach ($estateLists as $list) {
 					$pListView = $pDataListViewFactory->getListViewByName($list->name);
-					$pEstateList = new EstateList($pListView);
+					$pEstateList = new EstateList($pListView, $pEstateListEnvironment);
 
 					$pListViewFilterBuilder = $pDefaultFilterBuilderFactory->buildDefaultListViewFilter($pListView);
 					$pEstateList->setDefaultFilterBuilder($pListViewFilterBuilder);
@@ -239,6 +255,12 @@ class SDKWrapper
 						$pRequest = new Request($pApiActionRaw);
 						$usedParametersRaw = $pRequest->getApiAction()->getActionParameters();
 						$pCache->write($usedParametersRaw,serialize($responseRaw));
+
+						foreach ((array)($responseRaw['data']['records'] ?? []) as $record) {
+							if (isset($record['id'])) {
+								$allEstates[$lang][(int)$record['id']] = $record['elements']['objekttitel'] ?? '';
+							}
+						}
 
 						$params = $pEstateList->getEstateListParametersForCache(true, $lang); // formatted
 						$response = $this->createCacheForList($params, 'estate');
@@ -275,7 +297,41 @@ class SDKWrapper
 					}
 				}
 			}
+
+			/**
+			 * Fires after all estate list caches have been renewed.
+			 *
+			 * Allows external hooks (e.g. an nginx FastCGI cache warmer) to act on the
+			 * complete set of currently active estates without needing to parse the DB cache
+			 * themselves. Estates from multiple list views are merged per language key.
+			 *
+			 * @param array<string,array<int,string>> $allEstates Grouped by onOffice language code.
+			 *   Example: ['DEU' => [7407 => 'Charmante Wohnung', ...], 'ENG' => [7407 => 'Charming flat', ...]]
+			 */
+			do_action('onoffice/cache_renew/estates_ready', $allEstates);
 	 }
+
+	/**
+	 * Build an estate list environment whose field list is already loaded, so that field
+	 * existence checks (EstateList::hasPriceOnRequestField()) work during cache warming.
+	 * A failing field request must not abort the cache renewal; the environment is then
+	 * returned unloaded and behaves exactly as before.
+	 *
+	 * @return EstateListEnvironmentDefault
+	 */
+	private function createEstateListEnvironment(): EstateListEnvironmentDefault
+	{
+		$pEnvironment = new EstateListEnvironmentDefault($this->_pContainer);
+
+		try {
+			$pEnvironment->getFieldnames()->loadLanguage();
+		} catch (\Exception $pException) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Needed to debug incomplete cache entries.
+			error_log('onOffice: could not load field list for cache warming: ' . $pException->getMessage());
+		}
+
+		return $pEnvironment;
+	}
 
 	/**
 	 * Normalize and validate onOffice language codes.

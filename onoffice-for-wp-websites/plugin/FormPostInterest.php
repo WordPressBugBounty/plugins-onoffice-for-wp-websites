@@ -22,8 +22,8 @@
 
 namespace onOffice\WPlugin;
 
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 use onOffice\SDK\onOfficeSDK;
 use onOffice\WPlugin\API\APIClientActionGeneric;
 use onOffice\WPlugin\API\ApiClientException;
@@ -31,9 +31,11 @@ use onOffice\WPlugin\DataFormConfiguration\DataFormConfiguration;
 use onOffice\WPlugin\DataFormConfiguration\DataFormConfigurationInterest;
 use onOffice\WPlugin\Field\Collection\FieldsCollectionConfiguratorForm;
 use onOffice\WPlugin\Field\SearchcriteriaFields;
+use onOffice\WPlugin\DataView\DataAddressDetailViewHandler;
+use onOffice\WPlugin\Factory\AddressListFactory;
 use onOffice\WPlugin\Form\FormPostConfiguration;
 use onOffice\WPlugin\Form\FormPostInterestConfiguration;
-use function sanitize_email;
+use onOffice\WPlugin\Form\NewsletterFormPostConfiguration;
 use function sanitize_text_field;
 
 /**
@@ -54,22 +56,36 @@ class FormPostInterest
 	/** @var string */
 	private $_messageDuplicateAddressData = '';
 
+	/** @var AddressListFactory */
+	private $_pAddressDetailFactory;
+
 	/**
 	 *
 	 * @param FormPostConfiguration $pFormPostConfiguration
 	 * @param FormPostInterestConfiguration $pFormPostInterestConfiguration
 	 * @param SearchcriteriaFields $pSearchcriteriaFields
 	 * @param FieldsCollectionConfiguratorForm $pFieldsCollectionConfiguratorForm
+	 * @param AddressListFactory $pAddressDetailFactory
 	 */
 
 	public function __construct(
 		FormPostConfiguration $pFormPostConfiguration,
 		FormPostInterestConfiguration $pFormPostInterestConfiguration,
 		SearchcriteriaFields $pSearchcriteriaFields,
-		FieldsCollectionConfiguratorForm $pFieldsCollectionConfiguratorForm)
+		FieldsCollectionConfiguratorForm $pFieldsCollectionConfiguratorForm,
+		AddressListFactory $pAddressDetailFactory)
 	{
 		parent::__construct($pFormPostConfiguration, $pSearchcriteriaFields, $pFieldsCollectionConfiguratorForm);
 		$this->_pFormPostInterestConfiguration = $pFormPostInterestConfiguration;
+		$this->_pAddressDetailFactory = $pAddressDetailFactory;
+	}
+
+	/**
+	 * @return NewsletterFormPostConfiguration
+	 */
+	protected function getNewsletterFormPostConfiguration(): NewsletterFormPostConfiguration
+	{
+		return $this->_pFormPostInterestConfiguration;
 	}
 
 	/**
@@ -83,7 +99,7 @@ class FormPostInterest
 	{
 		/* @var $pFormConfiguration DataFormConfigurationInterest */
 		$pFormConfiguration = $pFormData->getDataFormConfiguration();
-		$recipient = $pFormConfiguration->getRecipientByUserSelection();
+		$recipient = $this->determineRecipient($pFormConfiguration);
 		$pWPQuery = $this->_pFormPostInterestConfiguration->getWPQueryWrapper()->getWPQuery();
 		$estateId = $pWPQuery->get('estate_id', null);
 		$subject = $this->generateDefaultEmailSubject($pFormData->getFormtype(), $this->_pFormPostInterestConfiguration->getNewsletterAccepted());
@@ -109,7 +125,7 @@ class FormPostInterest
 				if ($writeActivity) {
 					$this->_pFormPostInterestConfiguration->getFormAddressCreator()->createAgentsLog($pFormConfiguration, $addressId, null);
 				}
-				$this->setNewsletter( $addressId );
+				$this->setNewsletter( $addressId, $pFormConfiguration );
 				if ($enableCreateTask) {
 					$this->_pFormPostInterestConfiguration->getFormAddressCreator()->createTask($pFormConfiguration, $addressId, $estateId);
 				}
@@ -119,6 +135,56 @@ class FormPostInterest
 				$this->sendEmail( $pFormData, $recipient, $subject );
 			}
 		}
+	}
+
+	/**
+	 * Determines the email address the lead will be sent to.
+	 *
+	 * @param DataFormConfiguration $pFormConfig
+	 * @return string
+	 */
+
+	private function determineRecipient(DataFormConfiguration $pFormConfig): string
+	{
+		$recipient = $pFormConfig->getRecipientByUserSelection();
+
+		if ($pFormConfig->getUseBrokerRecipient()) {
+			$recipient = $this->getBrokerRecipient() ?? $recipient;
+		}
+
+		return $recipient;
+	}
+
+	/**
+	 * Returns the email address of the address whose detail page this form is embedded
+	 * on, or null if the form isn't on an address detail page or the address has no email.
+	 *
+	 * @return string|null
+	 */
+
+	private function getBrokerRecipient(): ?string
+	{
+		$pDataAddressDetailViewHandler = new DataAddressDetailViewHandler();
+		$pAddressDataView = $pDataAddressDetailViewHandler->getAddressDetailView();
+		$pageId = intval($pAddressDataView->getPageId());
+
+		if ($pageId === 0) {
+			return null;
+		}
+
+		$pWPQuery = $this->_pFormPostInterestConfiguration->getWPQueryWrapper()->getWPQuery();
+		$addressId = $pWPQuery->query_vars['address_id'] ?? 0;
+
+		if (empty($addressId)) {
+			return null;
+		}
+
+		$defaultFields = ['defaultemail' => 'Email'];
+		$addressList = $this->_pAddressDetailFactory->createAddressDetail((int) $addressId);
+		$addressList->loadAddressesById([(int) $addressId], $defaultFields);
+		$email = $addressList->getAddressById((int) $addressId)['Email'] ?? '';
+
+		return $email !== '' ? $email : null;
 	}
 
 	/**
@@ -136,36 +202,6 @@ class FormPostInterest
 			->getFormFieldsWithRangeFields($formFields);
 		return $postvars;
 	}
-
-
-	/**
-	 *
-	 * @param FormData $pFormData
-	 * @return void
-	 * @throws ApiClientException
-	 * @throws Field\UnknownFieldException
-	 */
-
-	private function setNewsletter( $addressId)
-	{
-		if (!$this->_pFormPostInterestConfiguration->getNewsletterAccepted()) {
-			// No subscription for newsletter, which is ok
-			return;
-		}
-
-		$pSDKWrapper = $this->_pFormPostInterestConfiguration->getSDKWrapper();
-		$pAPIClientAction = new APIClientActionGeneric
-			($pSDKWrapper, onOfficeSDK::ACTION_ID_DO, 'registerNewsletter');
-		$pAPIClientAction->setParameters(['register' => true]);
-		$pAPIClientAction->setResourceId($addressId);
-		$pAPIClientAction->addRequestToQueue()->sendRequests();
-
-		if (!$pAPIClientAction->getResultStatus()) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception is for internal API error handling, not user-facing output
-			throw new ApiClientException($pAPIClientAction);
-		}
-	}
-
 
 	/**
 	 * @param FormData $pFormData
@@ -246,12 +282,19 @@ class FormPostInterest
 	{
 		$searchData = $pFormData->getSearchcriteriaData();
 		
-		// Clean up German number format for range fields
+		// Clean up number format for range fields
+		$thousandSep = get_option('onoffice-settings-thousand-separator-custom', '.');
+		$decimalSep = get_option('onoffice-settings-decimal-separator', ',');
 		foreach ($searchData as $key => $value) {
 			if (str_ends_with($key, '__von') || str_ends_with($key, '__bis')) {
 				if (is_string($value) && !empty($value)) {
-					// Remove dots and commas that are thousand separators (followed by exactly 3 digits)
-					$searchData[$key] = preg_replace('/[.,](?=\d{3}(?:\D|$))/', '', $value);
+					if (!empty($thousandSep)) {
+						$value = str_replace($thousandSep, '', $value);
+					}
+					if ($decimalSep !== '.') {
+						$value = str_replace($decimalSep, '.', $value);
+					}
+					$searchData[$key] = $value;
 				}
 			}
 		}

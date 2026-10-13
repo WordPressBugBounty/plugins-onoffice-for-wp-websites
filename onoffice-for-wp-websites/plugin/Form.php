@@ -21,14 +21,14 @@
 
 namespace onOffice\WPlugin;
 
-use DI\Container;
-use DI\ContainerBuilder;
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\Container;
+use onOffice\WPlugin\Vendor\DI\ContainerBuilder;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 use onOffice\WPlugin\Controller\InputVariableReaderFormatter;
 use onOffice\WPlugin\Form\CaptchaHandler;
 use onOffice\WPlugin\ScriptLoader\IncludeFileModel;
-use Parsedown;
+use onOffice_WPlugin_Vendor_Parsedown as Parsedown;
 use onOffice\SDK\onOfficeSDK;
 use onOffice\WPlugin\Controller\EstateTitleBuilder;
 use onOffice\WPlugin\Controller\GeoPositionFieldHandler;
@@ -38,6 +38,7 @@ use onOffice\WPlugin\DataFormConfiguration\DataFormConfigurationContact;
 use onOffice\WPlugin\DataFormConfiguration\DataFormConfigurationFactory;
 use onOffice\WPlugin\DataFormConfiguration\UnknownFormException;
 use onOffice\WPlugin\Field\Collection\FieldsCollectionBuilderShort;
+use onOffice\WPlugin\Field\Collection\FieldsCollectionCountryValuesForSearchCriteria;
 use onOffice\WPlugin\Field\Collection\FieldsCollectionConfiguratorForm;
 use onOffice\WPlugin\Field\CompoundFieldsFilter;
 use onOffice\WPlugin\Field\DefaultValue\ModelToOutputConverter\DefaultValueModelToOutputConverter;
@@ -120,6 +121,9 @@ class Form
 		if ($type === self::TYPE_INTEREST || $type === self::TYPE_APPLICANT_SEARCH) {
 			$pFieldBuilderShort->addFieldSupervisorForSearchCriteria($pFieldsCollection);
 		}
+
+		$this->_pContainer->get(FieldsCollectionCountryValuesForSearchCriteria::class)
+			->addCountryValues($pFieldsCollection);
 
 		$pFormPost = FormPostHandler::getInstance($type);
 		FormPost::incrementFormNo();
@@ -562,15 +566,27 @@ class Form
 		if (!$module) {
 			return [];
 		}
-		
+
 		$fieldObject = $this->_pFieldsCollection->getFieldByModuleAndName($module, $field);
-		
-		// Check if getDependencies method exists and return dependencies if available
-		if (method_exists($fieldObject, 'getDependencies')) {
-			return $fieldObject->getDependencies() ?? [];
+
+		$dependencies = method_exists($fieldObject, 'getDependencies')
+			? ($fieldObject->getDependencies() ?? [])
+			: [];
+
+		// The searchCriteriaFields API does not deliver dependencies. For fields that
+		// also exist in the estate module (e.g. objektart/objekttyp) the dependency
+		// information is identical, so fall back to the estate module's field.
+		if (empty($dependencies)
+			&& $module === onOfficeSDK::MODULE_SEARCHCRITERIA
+			&& $this->_pFieldsCollection->containsFieldByModule(onOfficeSDK::MODULE_ESTATE, $field)
+		) {
+			$pEstateField = $this->_pFieldsCollection->getFieldByModuleAndName(onOfficeSDK::MODULE_ESTATE, $field);
+			if (method_exists($pEstateField, 'getDependencies')) {
+				$dependencies = $pEstateField->getDependencies() ?? [];
+			}
 		}
-		
-		return [];
+
+		return $dependencies;
 	}
 
 	/**
@@ -667,8 +683,8 @@ class Form
 	 */
 	public function isApplyThousandSeparatorField(string $field): bool
 	{
-		return in_array($field, InputVariableReaderFormatter::APPLY_THOUSAND_SEPARATOR_FIELDS) && 
-			!empty(get_option('onoffice-settings-thousand-separator'));
+		return in_array($field, InputVariableReaderFormatter::APPLY_THOUSAND_SEPARATOR_FIELDS) &&
+			!empty(get_option('onoffice-settings-thousand-separator-custom'));
 	}
 
 

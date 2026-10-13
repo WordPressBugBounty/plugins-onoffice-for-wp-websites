@@ -39,10 +39,11 @@ use function __;
 use onOffice\WPlugin\SDKWrapper;
 use onOffice\WPlugin\API\APIClientActionGeneric;
 use onOffice\WPlugin\Language;
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 use onOffice\WPlugin\API\ApiClientException;
 use onOffice\WPlugin\Utility\FileVersionHelper;
+use onOffice\WPlugin\Utility\ThemeSupport;
 
 /**
  *
@@ -120,6 +121,16 @@ class AdminPageFormSettingsContact
 		$pFormModelFormSpecific->setLabel(__('Form Specific Options', 'onoffice-for-wp-websites'));
 		$pFormModelFormSpecific->addInputModel($pInputModelDefaultRecipient);
 		$pFormModelFormSpecific->addInputModel($pInputModelRecipient);
+		if (in_array($this->getType(), [Form::TYPE_OWNER, Form::TYPE_INTEREST], true)) {
+			$pInputModelUseBrokerRecipient = $pFormModelBuilder->createInputModelUseBrokerRecipient();
+			$pFormModelFormSpecific->addInputModel($pInputModelUseBrokerRecipient);
+		}
+		// Exclusive to the onOffice themes: only there is the owner form placed on an address
+		// detail page, which is what makes the advisor identifiable in the first place.
+		if ($this->getType() === Form::TYPE_OWNER && ThemeSupport::isOnOfficeTheme()) {
+			$pInputModelAssignBrokerAsSupervisor = $pFormModelBuilder->createInputModelAssignBrokerAsSupervisor();
+			$pFormModelFormSpecific->addInputModel($pInputModelAssignBrokerAsSupervisor);
+		}
 		$pFormModelFormSpecific->addInputModel($pInputModelSubject);
 		$pFormModelFormSpecific->addInputModel($pInputModelCaptcha);
 		$pFormModelFormSpecific->addInputModel($pInputModelDisplayUnitArea);

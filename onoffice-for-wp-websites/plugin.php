@@ -25,7 +25,7 @@ Plugin URI: https://wpplugindoc.onoffice.de
 Author: onOffice GmbH
 Author URI: https://en.onoffice.com/
 Description: Your connection to onOffice: This plugin enables you to have quick access to estates and forms – no additional sync with the software is needed. Consult support@onoffice.de for source code.
-Version: 6.14
+Version: 7.0.1
 Requires PHP: 8.2
 License: AGPL 3+
 License URI: https://www.gnu.org/licenses/agpl-3.0
@@ -34,15 +34,16 @@ Domain Path: /languages
 */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-const ONOFFICE_PLUGIN_VERSION = '6.14';
+const ONOFFICE_PLUGIN_VERSION = '7.0.1';
 define('ONOFFICE_PLUGIN_BASENAME', plugin_basename( __FILE__ ));
 
 require __DIR__ . '/vendor/autoload.php';
-require plugin_dir_path( __FILE__ ) . 'oo-updater.php';
+// prefixed dependencies (Strauss) - keeps php-di, PSR-11 and Parsedown out of the global namespace
+require __DIR__ . '/vendor-prefixed/autoload.php';
 
 define('ONOFFICE_PLUGIN_DIR', __DIR__);
 
-use DI\ContainerBuilder;
+use onOffice\WPlugin\Vendor\DI\ContainerBuilder;
 use onOffice\WPlugin\Controller\UserCapabilities;
 use onOffice\WPlugin\Cache\CachedOutput;
 use onOffice\WPlugin\Cache\CacheHandler;
@@ -163,20 +164,29 @@ add_action('admin_bar_menu', function ( $wp_admin_bar ) {
 
 add_action('admin_init', function () use ( $pDI ) {
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strpos() doesn't execute or display the value, only checks string position.
-    if ( isset($_SERVER["REQUEST_URI"]) && strpos($_SERVER["REQUEST_URI"], "action=onoffice-clear-cache") !== false ) {
-        $onofficeSettingsCache = get_option('onoffice-settings-duration-cache');
-        $timestamp = wp_next_scheduled('oo_cache_renew');
-        if ($timestamp) {
-            wp_unschedule_event($timestamp, 'oo_cache_renew');
-        }
-
-        wp_schedule_event(time(), $onofficeSettingsCache, 'oo_cache_renew');
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_safe_redirect() validates and sanitizes the URL.
-        $location = ! empty($_SERVER['HTTP_REFERER']) ? wp_unslash($_SERVER['HTTP_REFERER']) : admin_url('admin.php?page=onoffice-settings');
-        update_option('onoffice-notice-cache-was-cleared', true);
-        wp_safe_redirect($location);
-        exit();
+    if ( !isset($_SERVER["REQUEST_URI"]) || strpos($_SERVER["REQUEST_URI"], "action=onoffice-clear-cache") === false ) {
+        return;
     }
+
+    // Clear synchronously: a single DELETE plus a few delete_transient() calls, so the
+    // cache is provably empty by the time the redirect is answered. Doing this via cron
+    // made the success notice lie for up to one cron interval (10+ minutes on hosts that
+    // set DISABLE_WP_CRON and run wp-cron from the system crontab).
+    $pDI->get(CacheHandler::class)->clear();
+
+    // Warm the cache back up out-of-band. A single event on top of the recurring
+    // 'oo_cache_renew' schedule - never unschedule the recurring one here, because
+    // wp_schedule_event() returns false for an unknown recurrence name and the event
+    // would then be gone for good.
+    // WordPress itself skips a single event whose hook is already due within 10 minutes,
+    // so repeated clicks cannot pile up renewals.
+    wp_schedule_single_event(time(), 'oo_cache_renew');
+
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_safe_redirect() validates and sanitizes the URL.
+    $location = ! empty($_SERVER['HTTP_REFERER']) ? wp_unslash($_SERVER['HTTP_REFERER']) : admin_url('admin.php?page=onoffice-settings');
+    update_option('onoffice-notice-cache-was-cleared', true);
+    wp_safe_redirect($location);
+    exit();
 });
 
 // phpcs:disable WordPress.Security.NonceVerification.Recommended -- WordPress core edit action check, no side effects.
@@ -366,7 +376,7 @@ function customFieldCallback( $pDI, $format, $limitEllipsis, $meta_key ) {
 }
 
 
-add_filter('wpml_ls_language_url', function($url, $data) use ($pDI) {
+$pWpmlDetailUrlFilter = function($url, $data) use ($pDI) {
 	$pWPQueryWrapper = $pDI->get(WPQueryWrapper::class);
 	$estateId = (int) $pWPQueryWrapper->getWPQuery()->get('estate_id', 0);
 	$addressId = (int) $pWPQueryWrapper->getWPQuery()->get('address_id', 0);
@@ -376,7 +386,7 @@ add_filter('wpml_ls_language_url', function($url, $data) use ($pDI) {
 		$pEstateIdGuard = $pDI->get(EstateIdRequestGuard::class);
 		$pEstateDetailUrl = $pDI->get(EstateDetailUrl::class);
 		$oldUrl = $pDI->get(Redirector::class)->getCurrentLink();
-		return $pEstateIdGuard->createEstateDetailLinkForSwitchLanguageWPML($url, $estateId, $pEstateDetailUrl, $oldUrl, $data['default_locale']);
+		return $pEstateIdGuard->createEstateDetailLinkForSwitchLanguageWPML($url, $estateId, $pEstateDetailUrl, $oldUrl, $data['default_locale'] ?? get_locale());
 	}
 
 	if (!empty($addressId)) {
@@ -384,10 +394,23 @@ add_filter('wpml_ls_language_url', function($url, $data) use ($pDI) {
 		$pAddressIdGuard = $pDI->get(AddressIdRequestGuard::class);
 		$pEstateDetailUrl = $pDI->get(AddressDetailUrl::class);
 		$oldUrl = $pDI->get(Redirector::class)->getCurrentLink();
-		return $pAddressIdGuard->createAddressDetailLinkForSwitchLanguageWPML($url, $addressId, $pEstateDetailUrl, $oldUrl, $data['default_locale']);
+		return $pAddressIdGuard->createAddressDetailLinkForSwitchLanguageWPML($url, $addressId, $pEstateDetailUrl, $oldUrl, $data['default_locale'] ?? get_locale());
 	}
 	return $url;
-}, 10, 2);
+};
+
+add_filter('wpml_ls_language_url', $pWpmlDetailUrlFilter, 10, 2);
+
+// WPML builds the hreflang tags from the same language data as the switcher, but never applies wpml_ls_language_url to them
+add_filter('wpml_head_langs', function($languages) use ($pWpmlDetailUrlFilter) {
+	if (!is_array($languages)) {
+		return $languages;
+	}
+	foreach ($languages as $code => $data) {
+		$languages[$code]['url'] = $pWpmlDetailUrlFilter($data['url'], $data);
+	}
+	return $languages;
+});
 
 register_activation_hook(__FILE__, [Installer::class, 'install']);
 register_deactivation_hook(__FILE__, [Installer::class, 'deactivate']);

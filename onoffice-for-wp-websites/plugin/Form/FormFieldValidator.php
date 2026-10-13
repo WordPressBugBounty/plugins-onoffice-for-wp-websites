@@ -114,10 +114,33 @@ class FormFieldValidator
 		}
 
 		if ($pField->getName() === 'Email') {
-			$returnValue = str_replace(' ','',$value);
+			$mail = sanitize_email(str_replace(' ', '', $value));
+			// drop invalid addresses so the required-field check rejects the submission
+			$returnValue = is_email($mail) ? $mail : '';
 		}
 
-		return $returnValue;
+		return $this->enforceFieldLength($returnValue, $pField);
+	}
+
+
+	/**
+	 * Enforce the field length the template only advertises via maxlength.
+	 *
+	 * @param mixed $value
+	 * @param Field $pField
+	 * @return mixed
+	 *
+	 */
+
+	private function enforceFieldLength($value, Field $pField)
+	{
+		$length = $pField->getLength();
+
+		if (!is_string($value) || $length <= 0) {
+			return $value;
+		}
+
+		return mb_substr($value, 0, $length);
 	}
 
 	/**
@@ -190,14 +213,13 @@ class FormFieldValidator
 		}
 
 		if (in_array($name, InputVariableReaderFormatter::APPLY_THOUSAND_SEPARATOR_FIELDS)) {
-			$onofficeSettingsThousandSeparator = get_option('onoffice-settings-thousand-separator');
-			switch ($onofficeSettingsThousandSeparator) {
-				case InputVariableReaderFormatter::COMMA_THOUSAND_SEPARATOR:
-					$returnValue = str_replace(',', '', $returnValue);
-					break;
-				case InputVariableReaderFormatter::DOT_THOUSAND_SEPARATOR:
-					$returnValue = str_replace(['.', ','], ['', '.'], $returnValue);
-					break;
+			$thousandSep = get_option('onoffice-settings-thousand-separator-custom', '.');
+			$decimalSep = get_option('onoffice-settings-decimal-separator', ',');
+			if (!empty($thousandSep)) {
+				$returnValue = str_replace($thousandSep, '', $returnValue);
+			}
+			if ($decimalSep !== '.') {
+				$returnValue = str_replace($decimalSep, '.', $returnValue);
 			}
 		}
 

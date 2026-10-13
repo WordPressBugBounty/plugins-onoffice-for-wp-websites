@@ -23,13 +23,14 @@ namespace onOffice\WPlugin;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-use DI\Container;
-use DI\ContainerBuilder;
-use DI\DependencyException;
-use DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\Container;
+use onOffice\WPlugin\Vendor\DI\ContainerBuilder;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
 use onOffice\SDK\Exception\HttpFetchNoResultException;
 use onOffice\SDK\onOfficeSDK;
 use onOffice\WPlugin\API\APIClientActionGeneric;
+use onOffice\WPlugin\API\ApiClientException;
 use onOffice\WPlugin\Controller\EstateDetailUrl;
 use onOffice\WPlugin\Controller\EstateListBase;
 use onOffice\WPlugin\Controller\EstateListEnvironment;
@@ -69,6 +70,15 @@ class EstateList
 	implements EstateListBase
 {
 	const DEFAULT_LIMIT_CHARACTER_DESCRIPTION = 150;
+
+	/**
+	 * Appended to the view name so the map request (reduced field set) gets its own list-cache
+	 * key. '#' can never occur in a sanitized view name, so it cannot collide with a real one.
+	 */
+	const MAP_CACHE_LISTNAME_MARKER = '#map';
+
+	/** Records the map fetches per request; it pages until a response holds fewer. */
+	const MAP_BATCH_SIZE = 500;
 
 	/** @var array */
 	private $_records = [];
@@ -128,6 +138,9 @@ class EstateList
 
 	/** @var string */
 	private $_energyCertificate = '';
+
+	/** @var bool|null */
+	private $_hasPriceOnRequestField = null;
 
 	private $_geoFilter = null;
 
@@ -284,6 +297,28 @@ class EstateList
 	}
 
 	/**
+	 * @return EstateList
+	 * @throws API\APIEmptyResultException
+	 * @throws DependencyException
+	 * @throws NotFoundException
+	 * @throws UnknownViewException
+	 * @throws HttpFetchNoResultException
+	 * @throws API\ApiClientException
+	 */
+	public function getEstateListForMap(): EstateList
+	{
+		$pEstateListForMap = clone $this;
+		$pEstateListForMap->_pDataView = clone $this->_pDataView;
+		// No record limit is derived from getEstateOverallCount() here: that count belongs to
+		// the list query and using it as the map's listlimit truncated the map to the first N
+		// records of whatever the map query returned.
+		$pEstateListForMap->loadEstatesForMap(1);
+		$pEstateListForMap->resetEstateIterator();
+
+		return $pEstateListForMap;
+	}
+
+	/**
 	 *
 	 */
 	private function buildFieldsCollectionForEstate()
@@ -304,20 +339,28 @@ class EstateList
 	 */
 	private function loadRecords(int $currentPage)
 	{
+		// Same ordering constraint as loadRecordsForMap(): getEstateParameters() flushes the
+		// request queue for a contact-bound list, so both parameter sets are built first.
 		$estateParameters = $this->getEstateParameters($currentPage, $this->_formatOutput);
+		$estateParametersRaw = $this->getEstateParameters($currentPage, false);
+
 		$this->_pApiClientAction->setParameters($estateParameters);
 		$this->_pApiClientAction->addRequestToQueue();
 
-		$estateParametersRaw = $this->getEstateParameters($currentPage, false);
 		$estateParametersRaw['data'] = $this->_pEnvironment->getEstateStatusLabel()->getFieldsByPrio();
 		$estateParametersRaw['data'][] = 'vermarktungsart';
-		$estateParametersRaw['data'][] = 'preisAufAnfrage';
+		$estateParametersRaw['data'][] = 'objektart';
+		if ($this->hasPriceOnRequestField()) {
+			$estateParametersRaw['data'][] = 'preisAufAnfrage';
+		}
 		$estateParametersRaw['data'][] = 'virtualAddress';
 		$estateParametersRaw['data'][] = 'provisionsfrei';
-
-		if (in_array('multiParkingLot', $this->_pDataView->getFields())) {
-			$estateParametersRaw['data'] []= 'waehrung';
-		}
+		$estateParametersRaw['data'][] = 'nutzungsart';
+		$estateParametersRaw['data'][] = 'waehrung';
+		$estateParametersRaw['data'] = array_merge(
+			$estateParametersRaw['data'],
+			$this->_pDataView->getListFieldsShowPriceOnRequest()
+		);
 
 		if ($this->getShowTotalCostsCalculator()) {
 			$fields = ['kaufpreis', 'aussen_courtage', 'bundesland', 'waehrung'];
@@ -329,7 +372,10 @@ class EstateList
 			$estateParametersRaw['data'] = array_merge($estateParametersRaw['data'], $energyCertificateFields);
 		}
 
-		$estateParametersRaw['data'] = array_unique($estateParametersRaw['data']);
+		$estateParametersRaw['data'] = array_values(array_unique($estateParametersRaw['data']));
+
+		unset($estateParametersRaw['listname']);
+		unset($estateParametersRaw['params_list_cache']);
 
 		$pApiClientActionRawValues = clone $this->_pApiClientAction;
 		$pApiClientActionRawValues->setParameters($estateParametersRaw);
@@ -338,6 +384,12 @@ class EstateList
 		$this->_records = $this->_pApiClientAction->getResultRecords();
 		$recordsRaw = $pApiClientActionRawValues->getResultRecords();
 		$this->_recordsRaw = array_combine(array_column($recordsRaw, 'id'), $recordsRaw);
+
+		if (isset($estateParameters['filter']['geo'][0]['loc'])) {
+			$perPage = $this->getRecordsPerPage();
+			$offset = ($currentPage - 1) * $perPage;
+			$this->_records = array_slice($this->_records, $offset, $perPage);
+		}
 	}
 
 	/**
@@ -347,8 +399,12 @@ class EstateList
 	 */
 	private function loadRecordsOrderEstatesByTags(int $currentPage)
 	{
-		$this->_records = $this->fetchDataForOrderEstatesByTags($currentPage, $this->_formatOutput);
+		// The raw records carry the marketing-status fields that drive the tag-priority sort.
 		$formattedRecordsRaw = $this->fetchDataForOrderEstatesByTags($currentPage, false);
+
+		$this->_records = $this->_formatOutput
+			? $this->fetchDataForOrderEstatesByTags($currentPage, true)
+			: $formattedRecordsRaw;
 
 		$numRecordsPerPage = $this->getRecordsPerPage();
 		$startPosition = ($currentPage - 1) * $numRecordsPerPage;
@@ -358,6 +414,142 @@ class EstateList
 		$this->processRecordsRawForOrderEsates($combinedRawRecords, $result);
 		$pagedRecords = array_slice($result, $startPosition, $numRecordsPerPage, true);
 		$this->_records = $pagedRecords;
+	}
+
+	/**
+	 * @param int $currentPage
+	 * @throws UnknownViewException
+	 * @throws API\ApiClientException
+	 */
+	private function loadEstatesForMap(int $currentPage = 1)
+	{
+		$this->_pEnvironment->getFieldnames()->loadLanguage();
+
+		$this->loadRecordsForMap($currentPage);
+
+		$this->resetEstateIterator();
+	}
+
+	/**
+	 * @param int $currentPage
+	 * @throws ApiClientException
+	 * @throws DependencyException
+	 * @throws NotFoundException
+	 * @throws UnknownViewException
+	 */
+	private function loadRecordsForMap(int $currentPage)
+	{
+		$allRecords = [];
+		$allRecordsRaw = [];
+		$offset = 0;
+
+		do {
+			// Both parameter sets are built before anything is queued. getEstateParameters()
+			// sends requests of its own when the list is bound to a contact (shortcode
+			// attribute 'address'): fetchEstatesForAddressIds() and collectCountEstates()
+			// both call sendRequests(), which flushes whatever is already queued. Building
+			// the raw parameters after the formatted request was queued therefore split the
+			// two into separate send cycles, so _records and _recordsRaw could come from
+			// different cache generations. estateIterator() then found no raw record for an
+			// estate, left showGoogleMap unset and the theme dropped that estate's pin -
+			// while the list, which is loaded separately, still showed the estate.
+			$estateParameters = $this->getEstateParametersForMap($currentPage, $this->_formatOutput, $offset);
+			$estateParametersRaw = $this->getEstateParametersForMap($currentPage, false, $offset);
+
+			$this->_pApiClientAction->setParameters($estateParameters);
+			$this->_pApiClientAction->addRequestToQueue();
+
+			$pApiClientActionRawValues = clone $this->_pApiClientAction;
+			$pApiClientActionRawValues->setParameters($estateParametersRaw);
+			$pApiClientActionRawValues->addRequestToQueue();
+
+			$this->_pEnvironment->getSDKWrapper()->sendRequests();
+
+			$records = $this->_pApiClientAction->getResultRecords();
+			$recordsRaw = $pApiClientActionRawValues->getResultRecords();
+
+			// += keeps the estate id as key (array_merge() would renumber the numeric ids, after
+			// which estateIterator() and getRawValues() can no longer look a record up) and it
+			// deduplicates: a cache hit answers every listoffset with the full record set.
+			$countBefore = count($allRecords);
+			if (!empty($records)) {
+				$allRecords += array_combine(array_column($records, 'id'), $records);
+			}
+			if (!empty($recordsRaw)) {
+				$allRecordsRaw += array_combine(array_column($recordsRaw, 'id'), $recordsRaw);
+			}
+
+			$offset += count($records);
+			// A random list has no listoffset, so its result cannot be paged through.
+		} while (!$this->_pDataView->getRandom()
+			&& count($records) === self::MAP_BATCH_SIZE
+			&& count($allRecords) > $countBefore);
+
+		$this->_records = $allRecords;
+		$this->_recordsRaw = $allRecordsRaw;
+	}
+
+	/**
+	 * The map has to query exactly the same estates as the list, so its parameters are the
+	 * list's parameters with only the field set, the cache key and the paging replaced.
+	 * Building the filters a second time here let them drift apart from the list: the
+	 * address binding, filterid, georangesearch, geo_search and the sorting were missing,
+	 * so the map queried a wider set and then truncated it to the wrong records.
+	 *
+	 * @param int $currentPage
+	 * @param bool $formatOutput
+	 * @param int $offset
+	 * @return array
+	 * @throws DependencyException
+	 * @throws NotFoundException
+	 * @throws UnknownViewException
+	 */
+	private function getEstateParametersForMap(int $currentPage, bool $formatOutput, int $offset = 0)
+	{
+		$requestParams = $this->getEstateParameters($currentPage, $formatOutput);
+
+		$requestParams['data'] = [
+			'breitengrad',
+			'laengengrad',
+			'objekttitel',
+			'strasse',
+			'hausnummer',
+			'plz',
+			'ort',
+			'land',
+			'virtualAddress',
+            'referenz',
+			// Needed by EstateViewFieldModifierTypeEstateGeoBase::reduceRecord() to decide
+			// whether breitengrad/laengengrad should be zeroed out or replaced with the
+			// virtual-address coordinates. Without these, the missing keys are treated as
+			// falsy and the real coordinates get zeroed for every estate (P#165597 regression).
+			'objektadresse_freigeben_api',
+			'virtualLatitude',
+			'virtualLongitude',
+			'virtualStreet',
+			'virtualHouseNumber',
+			// Needed so estateIterator()'s MODIFIER_TYPE_MAP branch can read
+			// $recordRaw['showGoogleMap'] — without it isset() never passes and
+			// $recordModified['showGoogleMap'] is left unset for every estate.
+			'showGoogleMap',
+		];
+
+		$requestParams['listlimit'] = self::MAP_BATCH_SIZE;
+		// getEstateParameters() omits listoffset for a random list; keep it omitted there.
+		if (array_key_exists('listoffset', $requestParams)) {
+			$requestParams['listoffset'] = $offset;
+		}
+
+		if (isset($requestParams['listname'])) {
+			// Own cache key for the map: it fetches only map fields, but the list cache key
+			// ignores the field set — sharing it would overwrite the list's values (P#150089).
+			$requestParams['listname'] = $this->_pDataView->getName() . self::MAP_CACHE_LISTNAME_MARKER;
+		}
+		// The cron warms the list under the list's own field set. Looking the map up under
+		// those parameters would answer a map request with list records.
+		unset($requestParams['params_list_cache']);
+
+		return $requestParams;
 	}
 
 	/**
@@ -409,6 +601,13 @@ class EstateList
 		$pListView = $this->filterActiveInputFields($this->_pDataView);
 		$filter = $this->_pEnvironment->getDefaultFilterBuilder()->buildFilter();
 
+        if (!empty($this->_filterAddressId)) {
+            $addressList = $this->_pEnvironment->getAddressList();
+            $addressList->fetchEstatesForAddressIds([$this->_filterAddressId]);
+            $estateIds = $addressList->getEstateIdsForContact($this->_filterAddressId);
+            $filter['Id'] = [["op" => "IN", "val" => $estateIds]];
+        }
+
 		$numRecordsPerPage = 500;
 
 		$pFieldModifierHandler = new ViewFieldModifierHandler(
@@ -417,8 +616,19 @@ class EstateList
 		);
 
 		$aggregatedData = [];
+		$seenIds = [];
 		$totalFetched = 0;
 		$this->_currentEstatePage = $currentPage;
+
+		// Route the marketing-status sequence sort through the list cache, exactly like the
+		// standard list path (getEstateParameters). When the list has been pre-warmed, the SDK
+		// serves the full record set from cache instead of hitting the API page by page.
+		$useListCache = $pListView instanceof DataListView
+			&& empty($this->_filterAddressId)
+			&& $formatOutput === true;
+		$paramsListCache = $useListCache
+			? $this->getEstateListParametersForCache($formatOutput, $language)
+			: null;
 
 		do {
 			$offset = $totalFetched;
@@ -432,15 +642,21 @@ class EstateList
 				'formatoutput' => $formatOutput,
 				'addMainLangId' => true,
 			];
+			// Route every page through the listname cache key: a pre-warmed entry holds the full
+			// set and is sliced per page; partial live pages are not persisted (see ApiCall).
+			if ($useListCache) {
+				$requestParams = ['listname' => $this->_pDataView->getName()] + $requestParams;
+				$requestParams['params_list_cache'] = $paramsListCache;
+			}
 			if ($formatOutput !== true) {
 				$requestParams['data'] = $this->_pEnvironment->getEstateStatusLabel()->getFieldsByPrio();
 				$requestParams['data'][] = 'vermarktungsart';
-				$requestParams['data'][] = 'preisAufAnfrage';
-				if (in_array('multiParkingLot', $this->_pDataView->getFields())) {
-					$requestParams['data'][] = 'waehrung';
+				if ($this->hasPriceOnRequestField()) {
+					$requestParams['data'][] = 'preisAufAnfrage';
 				}
+				$requestParams['data'][] = 'waehrung';
 			}
-			if ($this->enableShowPriceOnRequestText() && !isset($requestParams['data']['preisAufAnfrage'])) {
+			if ($this->enableShowPriceOnRequestText() && $this->hasPriceOnRequestField() && !in_array('preisAufAnfrage', $requestParams['data'], true)) {
 				$requestParams['data'][] = 'preisAufAnfrage';
 			}
 			if ($pListView->getName() === 'detail') {
@@ -454,14 +670,37 @@ class EstateList
 			}
 
 			$requestParams += $this->addExtraParams();
+			// Geo range search parameters are not part of the listname cache key; bypass the
+			// list cache so the geo restriction is applied by the API (same guard as in
+			// getEstateParameters).
+			if (isset($requestParams['georangesearch'])) {
+				unset($requestParams['listname']);
+				unset($requestParams['params_list_cache']);
+			}
 
 			$this->_pApiClientAction->setParameters($requestParams);
 			$this->_pApiClientAction->addRequestToQueue()->sendRequests();
 			$result = $this->_pApiClientAction->getResultRecords();
 
-			$aggregatedData = array_merge($aggregatedData, $result);
-			$totalFetched += count($result);
-		} while (count($result) == $numRecordsPerPage);
+			// Deduplicate by estate id: a cache hit returns the full record set on every
+			// iteration (the cache ignores listoffset for the raw response), so without this
+			// the loop would both duplicate records and never terminate for lists whose size
+			// is an exact multiple of the page size.
+			$newRecords = [];
+			foreach ($result as $record) {
+				$id = $record['id'] ?? null;
+				if ($id !== null && isset($seenIds[$id])) {
+					continue;
+				}
+				if ($id !== null) {
+					$seenIds[$id] = true;
+				}
+				$newRecords[] = $record;
+			}
+
+			$aggregatedData = array_merge($aggregatedData, $newRecords);
+			$totalFetched += count($newRecords);
+		} while (count($result) == $numRecordsPerPage && count($newRecords) > 0);
 
 		if ($formatOutput !== true) {
 			usort($aggregatedData, [$this, 'sortMarkedProperties']);
@@ -559,7 +798,10 @@ class EstateList
 		if($formatOutput === false) {
 			$fields = array_merge(
 				$fields,
-				$this->_pEnvironment->getEstateStatusLabel()->getFieldsByPrio()
+				$this->_pEnvironment->getEstateStatusLabel()->getFieldsByPrio(),
+				// Needed so the marketing-status sequence sort (SHOW_MARKED_PROPERTIES_SORT)
+				// can compute the marketing tag of each estate directly from the cache.
+				['vermarktungsart']
 			);
 		}
 
@@ -576,7 +818,9 @@ class EstateList
 
 		$requestParams['data'][] = $pListView->getSortby();
 		$requestParams['data'] = array_merge($requestParams['data'], $pListView->getSortByUserValues());
-		$requestParams['data'][] = 'preisAufAnfrage';
+		if ($this->hasPriceOnRequestField()) {
+			$requestParams['data'][] = 'preisAufAnfrage';
+		}
 		$requestParams['data'][] = 'provisionsfrei';
 		$requestParams['data'][] = 'referenz';
 		$requestParams['sortby'] = $pListView->getSortby();
@@ -622,14 +866,23 @@ class EstateList
 		);
 		
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Geo search is a public filter, no nonce needed
+		$hasGeoSearch = false;
 		if ( isset( $_GET['geo_search'] ) ) {
 			$geoSearch = sanitize_text_field( wp_unslash( $_GET['geo_search'] ) );
 			$geoCoords = explode( ',', $geoSearch );
 			if ( count( $geoCoords ) === 2 ) {
 				$filter['geo'][0]['loc'] = $geoSearch;
+				$hasGeoSearch = true;
 			}
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		if (!$hasGeoSearch) {
+			unset($filter['geo']);
+		}
+
+		if ($hasGeoSearch) {
+			$numRecordsPerPage = 500;
+		}
 
 		$requestParams = [
 			'data' => $pFieldModifierHandler->getAllAPIFields(),
@@ -647,14 +900,14 @@ class EstateList
 		}
 
 		if (!$pListView->getRandom()) {
-			$offset = ($currentPage - 1) * $numRecordsPerPage;
+			$offset = $hasGeoSearch ? 0 : ($currentPage - 1) * $numRecordsPerPage;
 			$this->_currentEstatePage = $currentPage;
 			$requestParams += [
 				'listoffset' => $offset
 			];
 		}
 
-		if ($this->enableShowPriceOnRequestText() && !isset($requestParams['data']['preisAufAnfrage'])) {
+		if ($this->enableShowPriceOnRequestText() && $this->hasPriceOnRequestField() && !in_array('preisAufAnfrage', $requestParams['data'], true)) {
 			$requestParams['data'][] = 'preisAufAnfrage';
 		}
 		if ($pListView->getName() === 'detail') {
@@ -731,7 +984,10 @@ class EstateList
 			}
 		}
 
-		if(in_array($requestParams['sortby'], $pListView->getListFieldsShowPriceOnRequest())){
+		if (
+			in_array($requestParams['sortby'], $pListView->getListFieldsShowPriceOnRequest()) &&
+			$this->hasPriceOnRequestField()
+		) {
 			$sortKey = $requestParams['sortby'];
 			$sortOrder = $requestParams['sortorder'];
 
@@ -876,7 +1132,19 @@ class EstateList
 		}
 
 		if ($modifier === EstateViewFieldModifierTypes::MODIFIER_TYPE_MAP && $this->_pDataView instanceof DataListView) {
-			$recordModified['showGoogleMap'] = $this->getShowMapConfig();
+			// The formatted record carries showGoogleMap too (getEstateParametersForMap()
+			// requests it for both the formatted and the raw map query). Fall back to it when
+			// the raw record is missing, so the decision is still made on a value the API
+			// returned instead of leaving showGoogleMap unset - which the map templates read
+			// as "do not show" and which silently drops the estate's pin.
+			$recordRawMap = $recordRaw !== [] ? $recordRaw : $recordElements;
+
+			if (isset($recordRawMap['showGoogleMap']) && ($recordRawMap['showGoogleMap'] === '0' || $recordRawMap['showGoogleMap'] === 0 || $recordRawMap['showGoogleMap'] === false)) {
+				$recordModified['showGoogleMap'] = false;
+			}
+			elseif (isset($recordRawMap['showGoogleMap']) && ($recordRawMap['showGoogleMap'] === '1' || $recordRawMap['showGoogleMap'] === 1 || $recordRawMap['showGoogleMap'] === true)) {
+				$recordModified['showGoogleMap'] = true;
+			}
 		}
 
 		if ($checkEstateIdRequestGuard && $this->_pWPOptionWrapper->getOption('onoffice-settings-title-and-description') == 0) {
@@ -902,14 +1170,24 @@ class EstateList
 			$recordModified['multiParkingLot'] = $parking->renderParkingLot($recordModified, $recordRaw['waehrung'] ?? '');
 		}
 
+		if (isset($recordModified['regionaler_zusatz']) && is_array($recordModified['regionaler_zusatz'])) {
+			$recordModified['regionaler_zusatz'] = $recordModified['regionaler_zusatz'][0] ?? '';
+		}
+
 		$recordModified = new ArrayContainerEscape($recordModified);
 
-		if ($recordRaw['preisAufAnfrage'] === DataListView::SHOW_PRICE_ON_REQUEST) {
+		$isPriceOnRequest = (int) ($recordRaw['preisAufAnfrage'] ?? 0) === (int) DataListView::SHOW_PRICE_ON_REQUEST;
+		if ($this->hasPriceOnRequestField() && $isPriceOnRequest) {
 			if ($this->enableShowPriceOnRequestText()) {
 				$priceFields = $this->_pDataView->getListFieldsShowPriceOnRequest();
+				
+				// Ensure the fallback computed price is also masked if utilized by the template
+				if (!in_array('calculatedPrice', $priceFields, true)) {
+					$priceFields[] = 'calculatedPrice';
+				}
 
 				foreach ($priceFields as $priceField) {
-					$this->displayTextPriceOnRequest($recordModified, $priceField);
+					$this->displayTextPriceOnRequest($recordModified, $priceField, $recordRaw);
 				}
 				$this->_totalCostsData = [];
 			}
@@ -942,14 +1220,51 @@ class EstateList
 	}
 
 	/**
-	 * @param ArrayContainerEscape $recordModified
+	 * @param ArrayContainerEscape|array $recordModified
 	 * @param string $field
-	 */
-	private function displayTextPriceOnRequest($recordModified, $field)
+	 * @param array $recordRaw
+	*/
+	private function displayTextPriceOnRequest(&$recordModified, $field, array $recordRaw = [])
 	{
-		if (!empty($recordModified[$field])) {
-			$recordModified[$field] = esc_html__('Price on request', 'onoffice-for-wp-websites');
+		if (empty($recordModified[$field])) {
+			return;
 		}
+
+		$marketingType = strtolower($recordRaw['vermarktungsart'] ?? '');
+
+		$isRentField = in_array($field, ['kaltmiete', 'warmmiete', 'nettokaltmiete', 'pacht'], true);
+		$isSaleField = in_array($field, ['kaufpreis'], true);
+
+		// CRITICAL: Unset irrelevant fields so the theme's foreach loop skips them entirely
+		if ($marketingType === 'kauf' && $isRentField) {
+			unset($recordModified[$field]);
+			return;
+		}
+		if ($marketingType === 'miete' && $isSaleField) {
+			unset($recordModified[$field]);
+			return;
+		}
+
+		$recordModified[$field] = esc_html__('Price on request', 'onoffice-for-wp-websites');
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function hasPriceOnRequestField(): bool
+	{
+		if ($this->_hasPriceOnRequestField !== null) {
+			return $this->_hasPriceOnRequestField;
+		}
+
+		try {
+			$this->_pEnvironment->getFieldnames()->getFieldInformation('preisAufAnfrage', onOfficeSDK::MODULE_ESTATE);
+			$this->_hasPriceOnRequestField = true;
+		} catch (UnknownFieldException $pE) {
+			$this->_hasPriceOnRequestField = false;
+		}
+
+		return $this->_hasPriceOnRequestField;
 	}
 
 	public function custom_pre_get_document_title($title_parts_array, $recordModified)
@@ -991,6 +1306,29 @@ class EstateList
 	public function getEstateOverallCount()
 	{
 		return $this->_pApiClientAction->getResultMeta()['cntabsolute'];
+	}
+
+	/**
+	 * Resolve the total number of estates for this list through the regular list cache
+	 * lifecycle, without loading estate pictures, contacts or raw values.
+	 *
+	 * The request is built with the exact same parameters as loadRecords()'s main
+	 * request, so it produces the identical DBCache key. On a cache hit no additional
+	 * API call is made; on a miss the regular data-creation process runs and warms the
+	 * list cache before the count is returned. This lets the estate search preview reuse
+	 * the estate list's cache entry instead of issuing its own isolated API request.
+	 *
+	 * @return int
+	 * @throws API\ApiClientException
+	 * @throws UnknownViewException
+	 */
+	public function getEstateOverallCountFromCache(): int
+	{
+		$estateParameters = $this->getEstateParameters(1, $this->_formatOutput);
+		$this->_pApiClientAction->setParameters($estateParameters);
+		$this->_pApiClientAction->addRequestToQueue()->sendRequests();
+
+		return (int) $this->getEstateOverallCount();
 	}
 
 	/**
@@ -1257,6 +1595,20 @@ class EstateList
 	}
 
 	/**
+     * Retrieves the unformatted API raw data of a contact person directly by their ID.
+     * * @param int|string $addressId
+     * @return array
+     */
+    public function getContactRawById($addressId): array
+    {
+        if (empty($addressId)) {
+            return [];
+        }
+
+        return $this->getEnvironment()->getAddressList()->getRawById((int)$addressId);
+    }
+
+	/**
 	 * @return int
 	 */
 	public function getCurrentEstateId(): int
@@ -1269,7 +1621,7 @@ class EstateList
 	 */
 	public function getCurrentMultiLangEstateMainId()
 	{
-		return $this->_currentEstate['mainId'];
+		return (int) ($this->_currentEstate['mainId'] ?? 0);
 	}
 
 	/**
@@ -1363,7 +1715,7 @@ class EstateList
 			$result[$field]['rangeFieldDisplayMode'] = $allDisplayModes[$field] ?? 'range';
 			if (
 				in_array($field, InputVariableReaderFormatter::APPLY_THOUSAND_SEPARATOR_FIELDS) &&
-				!empty(get_option('onoffice-settings-thousand-separator'))
+				!empty(get_option('onoffice-settings-thousand-separator-custom'))
 			) {
 				$result[$field]['is-apply-thousand-separator'] = true;
 			}
@@ -1374,7 +1726,7 @@ class EstateList
 	/**
 	 * @return bool
 	 */
-	private function getShowMapConfig(): bool
+	public function getShowMapConfig(): bool
 	{
 		if ($this->_pDataView instanceof DataListView) {
 			return $this->_pDataView->getShowMap();

@@ -1,0 +1,102 @@
+<?php return array (
+  'root' => 
+  array (
+    'name' => '__root__',
+    'pretty_version' => '1.0.0+no-version-set',
+    'version' => '1.0.0.0',
+    'reference' => NULL,
+    'type' => 'library',
+    'install_path' => __DIR__ . '/../',
+    'aliases' => 
+    array (
+    ),
+    'dev' => false,
+  ),
+  'versions' => 
+  array (
+    'altcha-org/altcha' => 
+    array (
+      'pretty_version' => 'v2.0.3',
+      'version' => '2.0.3.0',
+      'reference' => '8b02ad2c9b82998613bac4d093517d457061cbbe',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../altcha-org/altcha',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+    'erusev/parsedown' => 
+    array (
+      'pretty_version' => '1.8.0',
+      'version' => '1.8.0.0',
+      'reference' => '96baaad00f71ba04d76e45b4620f54d3beabd6f7',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../erusev/parsedown',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+    'laravel/serializable-closure' => 
+    array (
+      'pretty_version' => 'v2.0.11',
+      'version' => '2.0.11.0',
+      'reference' => 'd1af40ac4a6ccc12bd062a7184f63c9995a63bdd',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../laravel/serializable-closure',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+    'mjaschen/phpgeo' => 
+    array (
+      'pretty_version' => '4.2.1',
+      'version' => '4.2.1.0',
+      'reference' => '5e16834f9433c7780cda7e16aa279814f98ca697',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../mjaschen/phpgeo',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+    'php-di/invoker' => 
+    array (
+      'pretty_version' => '2.3.7',
+      'version' => '2.3.7.0',
+      'reference' => '3c1ddfdef181431fbc4be83378f6d036d59e81e1',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../php-di/invoker',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+    'php-di/php-di' => 
+    array (
+      'pretty_version' => '7.1.1',
+      'version' => '7.1.1.0',
+      'reference' => 'f88054cc052e40dbe7b383c8817c19442d480352',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../php-di/php-di',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+    'psr/container' => 
+    array (
+      'pretty_version' => '2.0.2',
+      'version' => '2.0.2.0',
+      'reference' => 'c71ecc56dfe541dbd90c5360474fbc405f8d5963',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../psr/container',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+  ),
+);

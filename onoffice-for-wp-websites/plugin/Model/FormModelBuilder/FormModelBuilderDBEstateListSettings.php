@@ -38,14 +38,14 @@ use onOffice\WPlugin\Types\FieldsCollection;
 use onOffice\WPlugin\Types\ImageTypes;
 use onOffice\WPlugin\Model\InputModelLabel;
 use onOffice\WPlugin\DataFormConfiguration\DataFormConfiguration;
-use DI\ContainerBuilder;
+use onOffice\WPlugin\Vendor\DI\ContainerBuilder;
 use onOffice\WPlugin\Field\Collection\FieldsCollectionBuilderShort;
 use onOffice\WPlugin\WP\InstalledLanguageReader;
 use onOffice\WPlugin\Model\InputModelBuilder\InputModelBuilderCustomLabel;
 use function __;
-use DI\DependencyException;
-use DI\NotFoundException;
-use DI\Container;
+use onOffice\WPlugin\Vendor\DI\DependencyException;
+use onOffice\WPlugin\Vendor\DI\NotFoundException;
+use onOffice\WPlugin\Vendor\DI\Container;
 
 /**
  *
@@ -748,7 +748,7 @@ class FormModelBuilderDBEstateListSettings
 			'miete' => __('Rented', 'onoffice-for-wp-websites'),
 			'reserviert' => __('Reserved', 'onoffice-for-wp-websites'),
 			'referenz' => __('Reference', 'onoffice-for-wp-websites'),
-			'exclusive' => __('Exklusive', 'onoffice-for-wp-websites'),
+			'exclusive' => __('Exclusive', 'onoffice-for-wp-websites'),
 			'preisreduktion' => __('Price reduction', 'onoffice-for-wp-websites'),
 			'objekt_des_tages' => __('Property of the day', 'onoffice-for-wp-websites'),
 			'objekt_der_woche' => __('Property of the week', 'onoffice-for-wp-websites'),

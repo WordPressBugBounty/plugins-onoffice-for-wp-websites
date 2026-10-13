@@ -4,7 +4,7 @@ Tags: real estate, onoffice
 Requires at least: 6.1
 Tested up to: 6.9.1
 Requires PHP: 8.2
-Stable tag: 6.14
+Stable tag: 7.0.1
 License: AGPL 3.0
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
@@ -75,6 +75,153 @@ Start editing inside the `onoffice-personalized` folder.
 == Screenshots ==
 
 == Changelog ==
+
+= 7.0.1 (2026-10-13) =
+
+**Fixed**
+* GeoPosition im Interessentenformular
+* hreflang Immobiliendetailseiten
+
+= 6.19.0 (2026-10-01) =
+
+**Added**
+* Github Action Testinstanzen Pullrequests
+* Github Action Testinstanzen Pullrequests small fix
+* Github Action bei Merge
+* CLAUDE.md WP-Plugin
+* Projektbasierende Instanzen verbinden
+* Vorlage Webseite mit Bug
+* WP-Plugin: Berater als Objekt- und Adressbetreuer setzen
+
+**Fixed**
+* fire onoffice/config_changed on listview/form create, update, delete, duplicate
+* incident/5827747-property-limit
+* Sonderzeichen in URLs erzeugen Weiterleitungsschleifen
+* Update PSR-11 v1 Container WP-Plugin
+* Missing validation permits invalid characters
+* Fehlende Input Wrapper
+* Ähnliche Immobilien Mehrsprachigkeit
+* Karten-Pins bei Auslandsimmobilien
+* Diskrepanz Immobilien Karte und Liste
+* Title und Meta Beschreibungen und andere Boolean-Felder
+
+**Changed**
+* Add capaibilities only once
+* WP-Plugin: Log Warnings
+
+**Maintenance**
+* sync prerelease with beta
+* update dependency installation to include Composer
+
+= 6.18.1 (2026-09-07) =
+
+**Fixed**
+* Preis auf Anfrage
+* clear the cache on demand and cache searched estate lists
+* fixing price on request issue and updating test
+* reverting recent changes back to json array
+* supporting units
+* trying to fix broken swiss prices
+
+= 6.18.0 (2026-08-28) =
+
+**Added**
+* Konfigurierbare Preisformatierung
+* Github Action Master
+* umstellen der url
+* support cities in different languages
+
+**Fixed**
+* fix estate search pagination
+* add pagination for mapper
+* handle additional API call exceptions in DefaultFilterBuilderListView
+* map city values in result lists
+* Interessentensuchformular fuer WP-Websites ausblenden
+* Bereinigung Boolean-Suchkriterien-Rendering
+* Preis auf Anfrage Markierte Immobilien
+* Mehrsprachigkeit im City-Select
+* **P170435:** fix-map
+* **P170435:** fix-map
+* **P170435:** fix-map
+* update unit tests workflow to include prerelease and release branches; enhance ApiCall tests for caching behavior
+
+**Maintenance**
+* Merge master for prerelease
+* purge cache after renew estate cache
+* Update dependencies
+
+**Changed**
+* defailt filter builder
+
+= 6.17.1 (2026-08-10) =
+
+**Fixed**
+* **P170435:** fix-map
+* **P170435:** fix-map
+
+= 6.17.0 (2026-07-30) =
+
+**Added**
+* Pure Ansprechpartner Fallback
+* Benötigt Captcha in Formularen aktivieren
+* Sortierung Vermarktungsstatus Caching
+* onoffice-estate-preview im Cache
+* Umziehen des oo-updateservers auf Ionos
+* Umziehen des oo-updateservers auf Ionos
+
+**Fixed**
+* sort-select-remove-button
+* fix estate search caching
+* hide price if price is on request
+* Ausgabe von Array anstelle Wert
+* Fatal Error Call to a member function setOoModule()
+* Geo Filter
+* Standalone Berater Leadgen
+* resolve cache key collision for map requests in EstateList
+
+**Maintenance**
+* **deps:** bump altcha-org/altcha from 2.0.0 to 2.0.3
+* **deps:** bump orchidjs/tom-select from 2.5.2 to 2.6.2
+* **deps:** bump select2/select2 from 4.0.13 to 4.1.0
+* **release:** update artifact name
+
+= 6.16.0 (2026-07-01) =
+
+**Added**
+* add PHP and WordPress metadata from readme.txt to updater.json
+* Feldabhängigkeiten in der Wertermittlung
+* semantic releases
+* update version to 6.13 and set required PHP version to 8.0
+
+**Changed**
+* Abweichender Agreementlink bei provisionsfrei
+
+**Fixed**
+* remove geo filter from api call
+* added method getContactRawById for wp-websites
+* docker tests
+* Karten anzeigen Immobilienliste
+* Sortierung Immoliste
+* cache key collisions for unit estate lists
+* Adressfreigabe Pin auf Map
+
+**Maintenance**
+* WP-Plugin oo-updater und Kundenliste
+* update dependencies
+
+**Tests**
+* add test for paginated data
+
+= 6.15 (2026-05-27) =
+
+**Added**
+* Field dependencies for search criteria fields in multi-page form wizard
+
+**Fixed**
+* Keyfacts: highlight checkbox for property-units
+* Caching for "regionaler_zusatz"
+* Unsubscribing from Newsletter via forms
+* Error message for GDPR checkbox (privacy policy)
 
 = 6.14 (2026-04-28) =
 

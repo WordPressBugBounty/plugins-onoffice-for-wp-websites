@@ -36,6 +36,27 @@ $pageTitles = $pForm->getPageTitlesByCurrentLanguage();
 
 $showFormAsModal = $pForm->getShowFormAsModal() || $pForm->getFormStatus() === FormPost::MESSAGE_SUCCESS;
 
+$json_file_path = ONOFFICE_PLUGIN_DIR . '/field-dependencies.json';
+
+if (file_exists($json_file_path)) {
+	$script_path = plugin_dir_url(ONOFFICE_PLUGIN_DIR.'/index.php').'/dist/onoffice-field-dependencies.min.js';
+	wp_register_script(
+		'oo-field-dependencies',
+		$script_path
+	);
+
+	$json_contents = file_get_contents($json_file_path);
+	$json_data = json_decode($json_contents, true);
+
+	wp_localize_script(
+		'oo-field-dependencies',
+		'oo_field_dependencies',
+		$json_data
+	);
+
+	wp_enqueue_script('oo-field-dependencies');
+}
+
 if ($pForm->getFormStatus() === FormPost::MESSAGE_SUCCESS) {
 	echo '<p role="status">'.esc_html__('Thank you for your inquiry. We will get back to you as soon as possible.', 'onoffice-for-wp-websites').'</p>';
 } else {
@@ -74,7 +95,11 @@ if ($pForm->getFormStatus() === FormPost::MESSAGE_SUCCESS) {
 		$isHiddenField = $pForm->isHiddenField($input);
 		$label = wp_kses_post($fieldLabel).' '.wp_kses_post($addition);
 
-		if (\onOffice\WPlugin\Types\FieldTypes::FIELD_TYPE_SINGLESELECT== $pForm->getFieldType($input)) {
+		if (isRangeInputField($input, $pForm)) {
+			// "from - to" fields are self-describing ("Sales price from") and bring their own .oo-input-group
+			$line = renderFormField($input, $pForm);
+
+		} elseif (\onOffice\WPlugin\Types\FieldTypes::FIELD_TYPE_SINGLESELECT== $pForm->getFieldType($input)) {
 
 			$line = '<div class="oo-single-select"><label for="'.$input.'-ts-control"><span class="oo-label-text' . ($displayError && $isRequired ? ' displayerror' : '') . '">'.$label.'</span></label>';
 			$line .=  renderFormField($input, $pForm).'</div>';	

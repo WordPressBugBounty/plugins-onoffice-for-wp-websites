@@ -69,7 +69,7 @@ class DBCache
 	{
 		$onofficeSettingsCache = get_option('onoffice-settings-duration-cache');
 		$interval = $this->_options['ttl'];
-		if (!empty($onofficeSettingsCache) && !isset($this->_options['cleanCache'])) {
+		if (!empty($onofficeSettingsCache)) {
 			$interval = wp_get_schedules()[$onofficeSettingsCache]["interval"];
 		}
 
@@ -89,10 +89,20 @@ class DBCache
 		$parametersSerialized = $this->getParametersSerialized( $parameters );
 		if(isset($parameters['parameters']['listname']))
 		{
-			$parametersSerialized = $parameters['parameters']['listname'].intval($parameters['parameters']['formatoutput']).$parameters['parameters']['outputlanguage'];
+			$hashParts = [
+				$parameters['parameters']['listname'],
+				intval($parameters['parameters']['formatoutput']),
+				$parameters['parameters']['outputlanguage'],
+			];
+
+			$filter = $parameters['parameters']['filter'] ?? [];
+			if (is_array($filter) && count($filter) > 0) {
+				$hashParts[] = serialize($filter);
+			}
+
+			$parametersSerialized = implode('|', $hashParts);
 		}
-		$parametersHashed = md5( $parametersSerialized );
-		return $parametersHashed;
+		return md5( $parametersSerialized );
 	}
 
 
@@ -170,15 +180,15 @@ class DBCache
 
 
 	/**
+	 * Deletes every entry, unconditionally.
 	 *
+	 * This used to delegate to cleanup() with a TTL of 0, which deletes
+	 * "WHERE UNIX_TIMESTAMP(cache_created) < time()". Entries written in the same
+	 * second compare equal rather than less and therefore survived - so a manual
+	 * "clear cache" left behind whatever the site had just cached.
 	 */
-
 	public function clearAll()
 	{
-		$oldTtl = $this->_options['ttl'];
-		$this->_options['ttl'] = 0;
-		$this->_options['cleanCache'] = true;
-		$this->cleanup();
-		$this->_options['ttl'] = $oldTtl;
+		$this->_pWpdb->query( "DELETE FROM {$this->_pWpdb->prefix}oo_plugin_cache" );
 	}
 }

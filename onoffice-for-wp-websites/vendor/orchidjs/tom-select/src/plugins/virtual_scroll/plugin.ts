@@ -1,5 +1,5 @@
 /**
- * Plugin: "restore_on_backspace" (Tom Select)
+ * Plugin: "virtual_scroll" (Tom Select)
  * Copyright (c) contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -28,6 +28,10 @@ export default function(this:TomSelect) {
 	var loading_more					= false;
 	var load_more_opt:HTMLElement;
 	var default_values: string[]		= [];
+	var default_values_loaded			= false;
+	var default_pagination:any;
+	var default_options: TomOption[]	= [];
+	var html_values: string[]			= [];
 
 	if( !self.settings.shouldLoadMore ){
 
@@ -65,7 +69,10 @@ export default function(this:TomSelect) {
 	// can we load more results for given query?
 	const canLoadMore = (query:string):boolean => {
 
-		if( typeof self.settings.maxOptions === 'number' && dropdown_content.children.length >= self.settings.maxOptions ){
+		if( self.settings.maxOptions !== null
+			&& typeof self.settings.maxOptions === 'number'
+			&& dropdown_content.children.length >= self.settings.maxOptions
+		){
 			return false;
 		}
 
@@ -137,7 +144,13 @@ export default function(this:TomSelect) {
 	self.hook('instead','loadCallback',( options:TomOption[], optgroups:TomOption[])=>{
 
 		if( !loading_more ){
-			self.clearOptions(clearFilter);
+			// When searching (non-empty query), keep selected items and HTML default options,
+			// but remove preloaded remote options so they don't bleed into search results.
+			// For empty query, use clearFilter (keeps default_values + items).
+			const activeFilter = self.lastValue !== ''
+				? (_option: TomOption, value: string) => self.items.indexOf(value) >= 0 || html_values.indexOf(value) >= 0
+				: clearFilter;
+			self.clearOptions(activeFilter);
 		}else if( load_more_opt ){
 			const first_option = options[0];
 			if( first_option !== undefined ){
@@ -147,7 +160,30 @@ export default function(this:TomSelect) {
 
 		orig_loadCallback.call( self, options, optgroups);
 
+		// After the initial preload (empty query), snapshot default_values and option objects
+		// so they can be restored when the user clears their search.
+		if( !loading_more && !default_values_loaded ){
+			default_values_loaded = true;
+			if( self.lastValue === '' ){
+				default_values = Object.keys(self.options);
+				default_pagination = pagination[''];
+				default_options = Object.values(self.options);
+			}
+		}
+
 		loading_more = false;
+	});
+
+
+	// as the “loading_more” element will be removed from the dropdown,
+	// we activate the previous option if needed
+	// to avoid the dropdown being scrolled back to the first one
+	self.hook('before','refreshOptions',()=>{
+
+		if (self.activeOption && "option" !== self.activeOption.getAttribute("role")) {
+			self.setActiveOption(self.activeOption.previousElementSibling as HTMLElement);
+		}
+
 	});
 
 
@@ -179,8 +215,32 @@ export default function(this:TomSelect) {
 	});
 
 
+	// Restore preloaded options and pagination when clearing search
+	const restoreDefaults = ():void => {
+		if( !default_values_loaded ) {
+			return;
+		}
+		// Re-add preloaded option objects (clearOptions can only remove, not restore)
+		self.addOptions(default_options);
+		// Remove any search results that are not part of the preloaded defaults
+		self.clearOptions(clearFilter);
+		if( default_pagination ) {
+			pagination[''] = default_pagination;
+		}
+	};
+
+	self.on('type',(query:string) => {
+		if( query === '' ){
+			restoreDefaults();
+			self.refreshOptions(false);
+		}
+	});
+
+	self.on('dropdown_close', restoreDefaults);
+
 	// add scroll listener and default templates
 	self.on('initialize',()=>{
+		html_values = Object.keys(self.options);
 		default_values = Object.keys(self.options);
 		dropdown_content = self.dropdown_content;
 
